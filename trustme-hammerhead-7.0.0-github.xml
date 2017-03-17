@@ -51,7 +51,7 @@
   <project path="device/fraunhofer/trustme_hammerhead_a0" name="device_fraunhofer_trustme_hammerhead_a0" remote="trustme" revision="trustme-7.0.0_r6-github" />
   <project path="device/fraunhofer/trustme_hammerhead_aX" name="device_fraunhofer_trustme_hammerhead_aX" remote="trustme" revision="trustme-7.0.0_r6-github" />
   <project path="device/fraunhofer/trustme_hammerhead_cml" name="device_fraunhofer_trustme_hammerhead_cml" remote="trustme" revision="trustme-7.0.0_r6-github" />
-  <project path="device/fraunhofer/trustme_hammerhead-kernel" name="kernel_msm" remote="trustme" revision="trustme-msm-hammerhead-3.4-nougat-github" />
+  <project path="device/fraunhofer/trustme_hammerhead-kernel" name="android_kernel_msm" remote="trustme" revision="trustme-msm-hammerhead-3.4-nougat-github" />
 
   <!-- CML Components -->
   <project path="device/fraunhofer/common/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustme-7.0.0_r6-github" />
