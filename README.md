@@ -18,12 +18,12 @@ A detailed introduction to the used concepts is provided in
 
 # Build and flash trust|me
 
-Currently there is a Android 5.1.1 based branch and a non stable Android 7.0.0 based branch
+Currently there is a Android 5.1.1 based branch and a non stable Android 7.1.2 based branch
 available of trust|me. You can find a howto for getting and compiling the code of trust|me in the
 main build repository:
 
 1. beta [trusteme_build (trustme-5.1.1_r38-github)] (https://github.com/trustm3/trustme_build/tree/trustme-5.1.1_r38-github)
-2. non-stable [trusteme_build (trustme-7.0.0_r6-github)] (https://github.com/trustm3/trustme_build/tree/trustme-7.0.0_r6-github)
+2. non-stable [trusteme_build (trustme-7.1.2_r6-github)] (https://github.com/trustm3/trustme_build/tree/trustme-7.1.2_r6-github)
 
 
 # trust|me in the IoT context -> trust|x
