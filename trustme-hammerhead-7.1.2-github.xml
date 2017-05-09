@@ -80,10 +80,10 @@
   <project path="packages/apps/Launcher3" name="quitschbo/android_packages_apps_Launcher3" groups="pdk-fs" remote="github" revision="losng"/>
 
   <!-- MicroG -->
-  <project path="packages/apps/GmsCore" name="microg/android_packages_apps_GmsCore" remote="github" revision="master" />
-  <project path="packages/apps/GsfProxy" name="microg/android_packages_apps_GsfProxy" remote="github" revision="master" />
-  <project path="packages/apps/FakeStore" name="microg/android_packages_apps_FakeStore" remote="github" revision="master" />
-  <project path="packages/services/IchnaeaNlpBackend" name="microg/IchnaeaNlpBackend" remote="github" revision="master" />
+  <project path="packages/apps/GmsCore" name="trustm3/android_packages_apps_GmsCore" remote="github" revision="trustme-7.1.2_r11-github" />
+  <project path="packages/apps/GsfProxy" name="trustm3/android_packages_apps_GsfProxy" remote="github" revision="trustme-7.1.2_r11-github" />
+  <project path="packages/apps/FakeStore" name="trustm3/android_packages_apps_FakeStore" remote="github" revision="trustme-7.1.2_r11-github" />
+  <project path="packages/services/IchnaeaNlpBackend" name="trustm3/IchnaeaNlpBackend" remote="github" revision="trustme-7.1.2_r11-github" />
 
   <!-- AOSP -->
   <project path="build/blueprint" name="platform/build/blueprint" groups="pdk,tradefed" />
