@@ -56,6 +56,7 @@
   <project path="external/protobuf-c-text" name="external_protobuf-c-text" remote="trustme" revision="trustme-5.1.1_r38-github"/>
   <project path="external/libdl-static" name="external_libdl-static" remote="trustme" revision="trustme-5.1.1_r38-github"/>
   <project path="external/ibmtpm20tss" name="external_ibmtpm20tss" remote="trustme" revision="trustme-5.1.1_r38-github"/>
+  <project path="external/libtar" name="android_external_libtar" remote="trustme" revision="trustme-5.1.1_r38-github"/>
 
 
   <!-- build tools -->
