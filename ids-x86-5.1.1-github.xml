@@ -58,6 +58,8 @@
   <project path="external/ibmtpm20tss" name="external_ibmtpm20tss" remote="trustme" revision="trustme-5.1.1_r38-github"/>
   <project path="external/libtar" name="android_external_libtar" remote="trustme" revision="trustme-5.1.1_r38-github"/>
 
+  <!-- IDS -->
+  <project path="external/trusted-connector" name="industrial-data-space/trusted-connector" remote="github" revision="develop"/>
 
   <!-- build tools -->
   <project path="external/squashfs-tools" name="android_external_squashfs-tools" remote="trustme" revision="trustme-5.1.1_r38-github"/>
