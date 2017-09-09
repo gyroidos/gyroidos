@@ -24,10 +24,10 @@
   </project>
 
   <!-- MANIFEST Repo -->
-  <project path="trustme/manifest" name="trustme_main" remote="quitschbo" revision="trustme-na-7.1.2_r11-github" />
+  <project path="trustme/manifest" name="trustme_main" remote="quitschbo" revision="trustme-next-7.1.2_r11-github" />
 
   <!-- TRUSTME -->
-  <project path="trustme/build" name="trustme_build" remote="quitschbo" revision="trustme-na-7.1.2_r11-github">
+  <project path="trustme/build" name="trustme_build" remote="quitschbo" revision="trustme-next-7.1.2_r11-github">
         <copyfile src="root.mk" dest="Makefile" />
   </project>
 
@@ -41,6 +41,7 @@
   <project path="external/toybox" name="android_external_toybox" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
   <project path="frameworks/av" name="android_frameworks_av" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
   <project path="frameworks/base" name="android_frameworks_base" groups="pdk-cw-fs,pdk-fs" remote="trustme" revision="trustme-7.1.2_r11-github"/>
+  <project path="frameworks/opt/telephony" name="android_frameworksr_opt_telephony" groups="pdk" remote="quitschbo" revision="trustme-next-7.1.2_r11-github"/>
   <project path="frameworks/native" name="android_frameworks_native" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
   <project path="hardware/libhardware" name="android_hardware_libhardware" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
   <project path="packages/apps/Email" name="android_packages_apps_Email" remote="trustme" revision="trustme-7.1.2_r11-github"/>
@@ -49,14 +50,14 @@
 
   <project path="external/openssl_legacy" name="android_external_openssl" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
 
-  <project path="device/fraunhofer/trustme_generic" name="device_fraunhofer_trustme_generic" remote="quitschbo" revision="trustme-na-7.1.2_r11-github" />
-  <project path="device/fraunhofer/trustme_hammerhead_a0" name="device_fraunhofer_trustme_hammerhead_a0" remote="quitschbo" revision="trustme-na-7.1.2_r11-github" />
-  <project path="device/fraunhofer/trustme_hammerhead_aX" name="device_fraunhofer_trustme_hammerhead_aX" remote="quitschbo" revision="trustme-na-7.1.2_r11-github" />
+  <project path="device/fraunhofer/trustme_generic" name="device_fraunhofer_trustme_generic" remote="quitschbo" revision="trustme-next-7.1.2_r11-github" />
+  <project path="device/fraunhofer/trustme_hammerhead_a0" name="device_fraunhofer_trustme_hammerhead_a0" remote="quitschbo" revision="trustme-next-7.1.2_r11-github" />
+  <project path="device/fraunhofer/trustme_hammerhead_aX" name="device_fraunhofer_trustme_hammerhead_aX" remote="quitschbo" revision="trustme-next-7.1.2_r11-github" />
   <project path="device/fraunhofer/trustme_hammerhead_cml" name="device_fraunhofer_trustme_hammerhead_cml" remote="trustme" revision="trustme-7.1.2_r11-github" />
   <project path="device/fraunhofer/trustme_hammerhead-kernel" name="android_kernel_msm" remote="trustme" revision="trustme-msm-hammerhead-3.4-nougat-github" />
 
   <!-- CML Components -->
-  <project path="device/fraunhofer/common/cml" name="device_fraunhofer_common_cml" remote="quitschbo" revision="trustme-na-7.1.2_r11-github" />
+  <project path="device/fraunhofer/common/cml" name="device_fraunhofer_common_cml" remote="quitschbo" revision="trustme-next-7.1.2_r11-github" />
   <project path="device/fraunhofer/common/overlays" name="device_fraunhofer_common_overlays" remote="trustme" revision="trustme-7.1.2_r11-github" />
 
   <project path="external/protobuf-c" name="external_protobuf-c" remote="trustme" revision="trustme-7.1.2_r11-github" upstream="trustme-7.1.2_r11-github"/>
@@ -64,7 +65,7 @@
   <project path="external/libdl-static" name="external_libdl-static" remote="trustme" revision="trustme-7.1.2_r11-github"/>
 
   <!-- android0 Components -->
-  <project path="device/fraunhofer/common/android0/rilproxy" name="device_fraunhofer_common_android0_rilproxy" remote="trustme" revision="trustme-7.1.2_r11-github" />
+  <project path="device/fraunhofer/common/android0/sockfwd" name="device_fraunhofer_common_android0_sockfwd" remote="trustme" revision="trustme-next-7.1.2_r11-github" />
   <project path="device/fraunhofer/common/android0/sensors-proxy" name="device_fraunhofer_common_android0_sensors-proxy" remote="trustme" revision="trustme-7.1.2_r11-github" />
   <project path="device/fraunhofer/common/android0/hardware" name="device_fraunhofer_common_android0_hardware" remote="trustme" revision="trustme-7.1.2_r11-github" />
 
@@ -73,7 +74,7 @@
 
   <!-- Custom Apps for Containers -->
   <project path="packages/services/TrustmeService" name="packages_services_TrustmeService" remote="trustme" revision="trustme-7.1.2_r11-github" />
-  <project path="packages/apps/TrustmeKeyguard" name="packages_apps_TrustmeKeyguard" remote="quitschbo" revision="trustme-na-7.1.2_r11-github" />
+  <project path="packages/apps/TrustmeKeyguard" name="packages_apps_TrustmeKeyguard" remote="quitschbo" revision="trustme-next-7.1.2_r11-github" />
 
   <!-- Other Apps -->
   <project path="packages/apps/Eleven" name="LineageOS/android_packages_apps_Eleven" remote="github" revision="cm-14.1" />
@@ -418,7 +419,6 @@
   <project path="frameworks/opt/net/wifi" name="platform/frameworks/opt/net/wifi" groups="pdk" />
   <project path="frameworks/opt/photoviewer" name="platform/frameworks/opt/photoviewer" groups="pdk-cw-fs,pdk-fs" />
   <project path="frameworks/opt/setupwizard" name="platform/frameworks/opt/setupwizard" groups="pdk-cw-fs,pdk-fs" />
-  <project path="frameworks/opt/telephony" name="platform/frameworks/opt/telephony" groups="pdk" />
   <project path="frameworks/opt/timezonepicker" name="platform/frameworks/opt/timezonepicker" groups="pdk-cw-fs,pdk-fs" />
   <project path="frameworks/opt/vcard" name="platform/frameworks/opt/vcard" groups="pdk-cw-fs,pdk-fs" />
   <project path="frameworks/rs" name="platform/frameworks/rs" groups="pdk" />
