@@ -12,67 +12,67 @@
     fetch="https://github.com/"/>
 
   <!--     DEFAULTS    -->
-  <default revision="refs/tags/android-7.1.2_r11"
+  <default revision="refs/tags/android-7.1.2_r33"
            remote="aosp"
            sync-j="4" />
 
-  <project path="build" name="android_build" groups="pdk,tradefed" remote="trustme" revision="trustme-7.1.2_r11-github" >
+  <project path="build" name="android_build" groups="pdk,tradefed" remote="trustme" revision="trustme-7.1.2_r33-github" >
     <!-- <copyfile src="core/root.mk" dest="Makefile" /> -->
   </project>
 
   <!-- MANIFEST Repo -->
-  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="trustme-next-7.1.2_r11-github" />
+  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="trustme-7.1.2_r33-github" />
 
   <!-- TRUSTME -->
-  <project path="trustme/build" name="trustme_build" remote="trustme" revision="trustme-next-7.1.2_r11-github">
+  <project path="trustme/build" name="trustme_build" remote="trustme" revision="trustme-7.1.2_r33-github">
         <copyfile src="root.mk" dest="Makefile" />
   </project>
 
   <!-- Trustme Library -->
-  <project name="external_trustmelib" path="external/trustmelib" remote="trustme" revision="trustme-7.1.2_r11-github"/>
+  <project name="external_trustmelib" path="external/trustmelib" remote="trustme" revision="trustme-7.1.2_r33-github"/>
 
   <!-- Patched Repositories -->
-  <project path="device/lge/hammerhead" name="android_device_lge_hammerhead" groups="device,hammerhead" remote="trustme" revision="trustme-7.1.2_r11-github" />
-  <project path="external/dnsmasq" name="android_external_dnsmasq" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="external/squashfs-tools" name="android_external_squashfs-tools" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="external/toybox" name="android_external_toybox" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="frameworks/av" name="android_frameworks_av" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="frameworks/base" name="android_frameworks_base" groups="pdk-cw-fs,pdk-fs" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="frameworks/opt/telephony" name="android_frameworks_opt_telephony" groups="pdk" remote="trustme" revision="trustme-next-7.1.2_r11-github"/>
-  <project path="frameworks/native" name="android_frameworks_native" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="hardware/libhardware" name="android_hardware_libhardware" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="packages/apps/Email" name="android_packages_apps_Email" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="system/core" name="android_system_core" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="system/netd" name="android_system_netd" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="system/sepolicy" name="android_system_sepolicy" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
+  <project path="device/lge/hammerhead" name="android_device_lge_hammerhead" groups="device,hammerhead" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="external/dnsmasq" name="android_external_dnsmasq" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="external/squashfs-tools" name="android_external_squashfs-tools" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="external/toybox" name="android_external_toybox" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="frameworks/av" name="android_frameworks_av" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="frameworks/base" name="android_frameworks_base" groups="pdk-cw-fs,pdk-fs" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="frameworks/opt/telephony" name="android_frameworks_opt_telephony" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="frameworks/native" name="android_frameworks_native" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="hardware/libhardware" name="android_hardware_libhardware" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="packages/apps/Email" name="android_packages_apps_Email" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="system/core" name="android_system_core" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="system/netd" name="android_system_netd" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="system/sepolicy" name="android_system_sepolicy" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
 
-  <project path="external/openssl_legacy" name="android_external_openssl" groups="pdk" remote="trustme" revision="trustme-7.1.2_r11-github"/>
+  <project path="external/openssl_legacy" name="android_external_openssl" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
 
-  <project path="device/fraunhofer/trustme_generic" name="device_fraunhofer_trustme_generic" remote="trustme" revision="trustme-next-7.1.2_r11-github" />
-  <project path="device/fraunhofer/trustme_hammerhead_a0" name="device_fraunhofer_trustme_hammerhead_a0" remote="trustme" revision="trustme-next-7.1.2_r11-github" />
-  <project path="device/fraunhofer/trustme_hammerhead_aX" name="device_fraunhofer_trustme_hammerhead_aX" remote="trustme" revision="trustme-next-7.1.2_r11-github" />
-  <project path="device/fraunhofer/trustme_hammerhead_cml" name="device_fraunhofer_trustme_hammerhead_cml" remote="trustme" revision="trustme-7.1.2_r11-github" />
+  <project path="device/fraunhofer/trustme_generic" name="device_fraunhofer_trustme_generic" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="device/fraunhofer/trustme_hammerhead_a0" name="device_fraunhofer_trustme_hammerhead_a0" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="device/fraunhofer/trustme_hammerhead_aX" name="device_fraunhofer_trustme_hammerhead_aX" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="device/fraunhofer/trustme_hammerhead_cml" name="device_fraunhofer_trustme_hammerhead_cml" remote="trustme" revision="trustme-7.1.2_r33-github" />
   <project path="device/fraunhofer/trustme_hammerhead-kernel" name="android_kernel_msm" remote="trustme" revision="trustme-msm-hammerhead-3.4-nougat-github" />
 
   <!-- CML Components -->
-  <project path="device/fraunhofer/common/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustme-next-7.1.2_r11-github" />
-  <project path="device/fraunhofer/common/overlays" name="device_fraunhofer_common_overlays" remote="trustme" revision="trustme-7.1.2_r11-github" />
+  <project path="device/fraunhofer/common/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="device/fraunhofer/common/overlays" name="device_fraunhofer_common_overlays" remote="trustme" revision="trustme-7.1.2_r33-github" />
 
-  <project path="external/protobuf-c" name="external_protobuf-c" remote="trustme" revision="trustme-7.1.2_r11-github" upstream="trustme-7.1.2_r11-github"/>
-  <project path="external/protobuf-c-text" name="external_protobuf-c-text" remote="trustme" revision="trustme-7.1.2_r11-github" upstream="trustme-7.1.2_r11-github"/>
-  <project path="external/libdl-static" name="external_libdl-static" remote="trustme" revision="trustme-7.1.2_r11-github"/>
+  <project path="external/protobuf-c" name="external_protobuf-c" remote="trustme" revision="trustme-7.1.2_r33-github" upstream="trustme-7.1.2_r33-github"/>
+  <project path="external/protobuf-c-text" name="external_protobuf-c-text" remote="trustme" revision="trustme-7.1.2_r33-github" upstream="trustme-7.1.2_r33-github"/>
+  <project path="external/libdl-static" name="external_libdl-static" remote="trustme" revision="trustme-7.1.2_r33-github"/>
 
   <!-- android0 Components -->
-  <project path="device/fraunhofer/common/android0/sockfwd" name="device_fraunhofer_common_android0_sockfwd" remote="trustme" revision="trustme-next-7.1.2_r11-github" />
-  <project path="device/fraunhofer/common/android0/sensors-proxy" name="device_fraunhofer_common_android0_sensors-proxy" remote="trustme" revision="trustme-7.1.2_r11-github" />
-  <project path="device/fraunhofer/common/android0/hardware" name="device_fraunhofer_common_android0_hardware" remote="trustme" revision="trustme-7.1.2_r11-github" />
+  <project path="device/fraunhofer/common/android0/sockfwd" name="device_fraunhofer_common_android0_sockfwd" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="device/fraunhofer/common/android0/sensors-proxy" name="device_fraunhofer_common_android0_sensors-proxy" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="device/fraunhofer/common/android0/hardware" name="device_fraunhofer_common_android0_hardware" remote="trustme" revision="trustme-7.1.2_r33-github" />
 
   <!-- Vendor binary blobs -->
   <project path="vendor/lge" name="TheMuppets/proprietary_vendor_lge" remote="github" revision="cm-14.1" />
 
   <!-- Custom Apps for Containers -->
-  <project path="packages/services/TrustmeService" name="packages_services_TrustmeService" remote="trustme" revision="trustme-7.1.2_r11-github" />
-  <project path="packages/apps/TrustmeKeyguard" name="packages_apps_TrustmeKeyguard" remote="trustme" revision="trustme-next-7.1.2_r11-github" />
+  <project path="packages/services/TrustmeService" name="packages_services_TrustmeService" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="packages/apps/TrustmeKeyguard" name="packages_apps_TrustmeKeyguard" remote="trustme" revision="trustme-7.1.2_r33-github" />
 
   <!-- Other Apps -->
   <project path="packages/apps/Eleven" name="LineageOS/android_packages_apps_Eleven" remote="github" revision="cm-14.1" />
@@ -81,10 +81,10 @@
   <project path="packages/apps/Launcher3" name="quitschbo/android_packages_apps_Launcher3" groups="pdk-fs" remote="github" revision="losng"/>
 
   <!-- MicroG -->
-  <project path="packages/apps/GmsCore" name="trustm3/android_packages_apps_GmsCore" remote="github" revision="trustme-7.1.2_r11-github" />
-  <project path="packages/apps/GsfProxy" name="trustm3/android_packages_apps_GsfProxy" remote="github" revision="trustme-7.1.2_r11-github" />
-  <project path="packages/apps/FakeStore" name="trustm3/android_packages_apps_FakeStore" remote="github" revision="trustme-7.1.2_r11-github" />
-  <project path="packages/services/IchnaeaNlpBackend" name="trustm3/IchnaeaNlpBackend" remote="github" revision="trustme-7.1.2_r11-github" />
+  <project path="packages/apps/GmsCore" name="trustm3/android_packages_apps_GmsCore" remote="github" revision="trustme-7.1.2_r33-github" />
+  <project path="packages/apps/GsfProxy" name="microg/android_packages_apps_GsfProxy" remote="github" revision="master" />
+  <project path="packages/apps/FakeStore" name="trustm3/android_packages_apps_FakeStore" remote="github" revision="trustme-7.1.2_r33-github" />
+  <project path="packages/services/IchnaeaNlpBackend" name="trustm3/IchnaeaNlpBackend" remote="github" revision="trustme-7.1.2_r33-github" />
 
   <!-- AOSP -->
   <project path="build/blueprint" name="platform/build/blueprint" groups="pdk,tradefed" />
@@ -333,7 +333,6 @@
   <project path="external/objenesis" name="platform/external/objenesis" groups="pdk" />
   <project path="external/okhttp" name="platform/external/okhttp" groups="pdk" />
   <project path="external/opencv" name="platform/external/opencv" groups="pdk-cw-fs,pdk-fs" />
-  <project path="external/opencv3" name="platform/external/opencv3" groups="pdk" />
   <project path="external/openfst" name="platform/external/openfst" groups="pdk" />
   <project path="external/openssh" name="platform/external/openssh" groups="pdk" />
   <project path="external/owasp/sanitizer" name="platform/external/owasp/sanitizer" groups="pdk" />
@@ -617,11 +616,11 @@
 
   <!-- hammerhead backports -->
   <project path="hardware/qcom/msm8x74" name="platform/hardware/qcom/msm8x74" groups="pdk,qcom_msm8x74" revision="master" />
-  <project path="hardware/qcom/audio" name="android_hardware_qcom_audio" groups="qcom,qcom_audio" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="hardware/qcom/bt" name="android_hardware_qcom_bt" groups="qcom" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="hardware/qcom/display" name="android_hardware_qcom_display" groups="pdk,qcom,qcom_display" remote="trustme" revision="trustme-7.1.2_r11-github"/>
-  <project path="hardware/qcom/gps" name="android_hardware_qcom_gps" groups="qcom,qcom_gps" remote="trustme" revision="trustme-7.1.2_r11-github" />
-  <project path="hardware/qcom/keymaster" name="android_hardware_qcom_keymaster" groups="qcom,qcom_keymaster" remote="trustme" revision="trustme-7.1.2_r11-github" />
-  <project path="hardware/qcom/media" name="android_hardware_qcom_media" groups="qcom" remote="trustme" revision="trustme-7.1.2_r11-github" />
+  <project path="hardware/qcom/audio" name="android_hardware_qcom_audio" groups="qcom,qcom_audio" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="hardware/qcom/bt" name="android_hardware_qcom_bt" groups="qcom" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="hardware/qcom/display" name="android_hardware_qcom_display" groups="pdk,qcom,qcom_display" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="hardware/qcom/gps" name="android_hardware_qcom_gps" groups="qcom,qcom_gps" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="hardware/qcom/keymaster" name="android_hardware_qcom_keymaster" groups="qcom,qcom_keymaster" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="hardware/qcom/media" name="android_hardware_qcom_media" groups="qcom" remote="trustme" revision="trustme-7.1.2_r33-github" />
 
 </manifest>
