@@ -52,7 +52,7 @@
   <project path="device/fraunhofer/trustme_bullhead_a0" name="device_fraunhofer_trustme_bullhead_a0" remote="trustme" revision="trustme-7.1.2_r33-github" />
   <project path="device/fraunhofer/trustme_bullhead_aX" name="device_fraunhofer_trustme_bullhead_aX" remote="trustme" revision="trustme-7.1.2_r33-github" />
   <project path="device/fraunhofer/trustme_bullhead_cml" name="device_fraunhofer_trustme_bullhead_cml" remote="trustme" revision="trustme-7.1.2_r33-github" />
-  <project path="device/fraunhofer/trustme_bullhead-kernel" name="android_kernel_msm" remote="trustme" revision="trustme-msm-bullhead-3.4-nougat-mr2" />
+  <project path="device/fraunhofer/trustme_bullhead-kernel" name="android_kernel_msm" remote="trustme" revision="trustme-msm-bullhead-3.10-nougat-mr2" />
 
   <!-- CML Components -->
   <project path="device/fraunhofer/common/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustme-7.1.2_r33-github" />
