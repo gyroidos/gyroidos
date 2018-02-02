@@ -36,6 +36,7 @@
 
   <project path="external/dnsmasq" name="android_external_dnsmasq" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
   <project path="external/squashfs-tools" name="android_external_squashfs-tools" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="external/toybox" name="android_external_toybox" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
   <project path="system/core" name="android_system_core" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
   <project path="system/netd" name="android_system_netd" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
   <project path="system/sepolicy" name="android_system_sepolicy" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
