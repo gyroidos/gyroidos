@@ -43,6 +43,7 @@
   <project path="frameworks/opt/telephony" name="android_frameworks_opt_telephony" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
   <project path="frameworks/native" name="android_frameworks_native" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
   <project path="hardware/libhardware" name="android_hardware_libhardware" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
+  <project path="hardware/libhardware_legacy" name="android_hardware_libhardware_legacy" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
   <project path="packages/apps/Email" name="android_packages_apps_Email" remote="trustme" revision="trustme-7.1.2_r33-github"/>
   <project path="system/core" name="android_system_core" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
   <project path="system/netd" name="android_system_netd" groups="pdk" remote="trustme" revision="trustme-7.1.2_r33-github"/>
@@ -444,7 +445,6 @@
   <project path="hardware/intel/img/psb_video" name="platform/hardware/intel/img/psb_video" groups="intel,pdk" />
   <project path="hardware/intel/sensors" name="platform/hardware/intel/sensors" groups="intel_sensors,pdk" />
   <project path="hardware/invensense" name="platform/hardware/invensense" groups="invensense,pdk" />
-  <project path="hardware/libhardware_legacy" name="platform/hardware/libhardware_legacy" groups="pdk" />
   <project path="hardware/marvell/bt" name="platform/hardware/marvell/bt" groups="marvell_bt,pdk" />
   <project path="hardware/qcom/bootctrl" name="platform/hardware/qcom/bootctrl" groups="pdk" />
   <project path="hardware/qcom/camera" name="platform/hardware/qcom/camera" groups="qcom,pdk" />
