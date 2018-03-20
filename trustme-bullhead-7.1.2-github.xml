@@ -58,7 +58,7 @@
   <project path="device/fraunhofer/trustme_bullhead-kernel" name="android_kernel_msm" remote="trustme" revision="trustme-msm-bullhead-3.10-nougat-mr2" />
 
   <!-- CML Components -->
-  <project path="device/fraunhofer/common/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustme-7.1.2_r33-github" />
+  <project path="device/fraunhofer/common/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="master" />
   <project path="device/fraunhofer/common/overlays" name="device_fraunhofer_common_overlays" remote="trustme" revision="trustme-7.1.2_r33-github" />
 
   <project path="external/protobuf-c" name="external_protobuf-c" remote="trustme" revision="trustme-7.1.2_r33-github" upstream="trustme-7.1.2_r33-github"/>
