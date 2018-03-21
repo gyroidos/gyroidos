@@ -9,7 +9,7 @@ To switch contexts the Power button is virtualized in a special way so that long
 triggers a switch to the so called *c0* container which provides a trusted GUI to select one of
 the user containers *c1* to *cN*. In the source and workspace structure these are called *a0* to *aN*.
 
-> **Note**: This code repository currently supports the Google Nexus 5 (hammerhead) device only!
+> **Note**: This code repository currently supports the Google Nexus 5X (bullhead) and Nexus 5 (hammerhead) devices only!
 
 ![trustme system architecture](doc/architecture.png)
 
@@ -18,18 +18,19 @@ A detailed introduction to the used concepts is provided in
 
 # Build and flash trust|me
 
-Currently there is a Android 5.1.1 based branch and a non stable Android 7.1.2 based branch
+Currently there is a Android 7.1.2 based branch and ithe old beta Android 5.1.1 based branch
 available of trust|me. You can find a howto for getting and compiling the code of trust|me in the
 main build repository:
 
-1. beta [trusteme_build (trustme-5.1.1_r38-github)] (https://github.com/trustm3/trustme_build/tree/trustme-5.1.1_r38-github)
-2. non-stable [trusteme_build (trustme-7.1.2_r6-github)] (https://github.com/trustm3/trustme_build/tree/trustme-7.1.2_r6-github)
+1. beta [trustme_build (trustme-7.1.2_r33-github)](https://github.com/trustm3/trustme_build/tree/trustme-7.1.2_r33-github)
+2. old-beta [trustme_build (trustme-5.1.1_r38-github)](https://github.com/trustm3/trustme_build/tree/trustme-5.1.1_r38-github)
 
 
 # trust|me in the IoT context -> trust|x
 
 > **Note**: The trust|x part is only available for x86 right now!  
-> Use [ids-x86-5.1.1-github.xml](ids-x86-5.1.1-github.xml) as manifest to get the IDS related code
+> Use [ids-x86-7.1.2-github.xml](ids-x86-7.1.2-github.xml) as manifest to get the IDS related code
+> or [ids-x86-5.1.1-github.xml](ids-x86-5.1.1-github.xml) for the former code base
 
 The trust|me code base is also used for our platform reference implementation for an IDS connector.
 The [Industrial Data Space (IDS)](http://www.industrialdataspace.org/en/)
