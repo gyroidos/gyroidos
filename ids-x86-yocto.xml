@@ -24,7 +24,7 @@
 
   <!-- MANIFEST Repo -->
   <project path="trustme/manifest" name="quitschbo/trustme_main" remote="github" revision="wip" />
-  <project path="trustme/build" name="quitschbo/trustme_build" remote="github" revision="wip">
+  <project path="trustme/build" name="trustme_build" remote="trustme" revision="master">
      <copyfile src="yocto/init_ws.sh" dest="init_ws.sh" />
   </project>
 
