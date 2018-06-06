@@ -33,6 +33,6 @@
 
   <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
   <project path="meta-intel" name="meta-intel" />
-  <project path="meta-selinux" name="meta-selinux" revision="master" />
+  <project path="meta-selinux" name="meta-selinux" />
 
 </manifest>
