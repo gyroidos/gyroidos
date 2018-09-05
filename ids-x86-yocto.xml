@@ -32,6 +32,7 @@
   <project path="meta-trustx" name="quitschbo/meta-trustx" remote="github" revision="wip" />
 
   <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
+  <project path="meta-virtualization" name="meta-virtualization" />
   <project path="meta-intel" name="meta-intel" />
   <project path="meta-selinux" name="meta-selinux" />
 
