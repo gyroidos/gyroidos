@@ -23,13 +23,13 @@
   <project path="poky" name="poky" />
 
   <!-- MANIFEST Repo -->
-  <project path="trustme/manifest" name="quitschbo/trustme_main" remote="github" revision="wip" />
+  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="master" />
   <project path="trustme/build" name="trustme_build" remote="trustme" revision="master">
      <copyfile src="yocto/init_ws.sh" dest="init_ws.sh" />
   </project>
 
   <!-- TRUSTME -->
-  <project path="meta-trustx" name="quitschbo/meta-trustx" remote="github" revision="wip" />
+  <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="master" />
 
   <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
   <project path="meta-virtualization" name="meta-virtualization" />
