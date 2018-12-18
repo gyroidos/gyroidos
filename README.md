@@ -11,10 +11,10 @@ the user containers *c1* to *cN*. In the source and workspace structure these ar
 
 > **Note**: This code repository currently supports the Google Nexus 5X (bullhead) and Nexus 5 (hammerhead) devices only!
 
-![trustme system architecture](doc/architecture.png)
+![trustme system architecture](https://github.com/trustm3/trustme_main/raw/master/doc/architecture.png)
 
 A detailed introduction to the used concepts is provided in
-[trustme.pdf](doc/trustme.pdf)
+[trustme.pdf](https://github.com/trustm3/trustme_main/raw/master/doc/trustme.pdf)
 
 # Build and flash trust|me
 
@@ -37,7 +37,7 @@ The [Industrial Data Space (IDS)](http://www.industrialdataspace.org/en/)
 provides concepts for a generic shared data cloud in the IoT context.
 The following figure shows the generic architecture of trust|x
 
-![trust|x system architecture](doc/trust-x-ids.png)
+![trust|x system architecture](https://github.com/trustm3/trustme_main/raw/master/doc/trust-x-ids.png)
 
 We reuse only the container management layer of trust|me (ramdisk). The whole Android high level user space stack is
 replaced by a generic GNU user space stack. The "business logic" which is not part of this code release is implemented
