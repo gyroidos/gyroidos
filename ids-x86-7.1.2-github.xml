@@ -47,7 +47,7 @@
 
   <project path="device/fraunhofer/trustme_generic" name="device_fraunhofer_trustme_generic" remote="trustme" revision="trustme-7.1.2_r33-github" />
   <project path="device/fraunhofer/trustme_x86_cml" name="device_fraunhofer_trustme_x86_cml" remote="trustme" revision="trustme-7.1.2_r33-github" />
-  <project path="device/fraunhofer/trustme_x86-kernel" name="android_kernel_common" remote="trustme" revision="trustme-android-4.4-github" />
+  <project path="device/fraunhofer/trustme_x86-kernel" name="android_kernel_common" remote="trustme" revision="trustme-android-4.9-github" />
 
   <!-- CML Components -->
   <project path="device/fraunhofer/common/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustme-7.1.2_r33-github" />
@@ -97,6 +97,7 @@
   <project path="external/compiler-rt" name="platform/external/compiler-rt" groups="pdk" />
   <project path="external/e2fsprogs" name="platform/external/e2fsprogs" groups="pdk" />
   <project path="external/fec" name="platform/external/fec" groups="pdk" />
+  <project path="external/icu" name="platform/external/icu" groups="pdk" />
   <project path="external/iproute2" name="platform/external/iproute2" groups="pdk" />
   <project path="external/iptables" name="platform/external/iptables" groups="pdk-cw-fs" />
   <project path="external/iputils" name="platform/external/iputils" groups="pdk-cw-fs" />
