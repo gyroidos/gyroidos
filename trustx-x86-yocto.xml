@@ -25,7 +25,7 @@
   <!-- MANIFEST Repo -->
   <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="master" />
   <project path="trustme/build" name="trustme_build" remote="trustme" revision="master">
-     <copyfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
+     <copyfile src="yocto/init_ws.sh" dest="init_ws.sh" />
   </project>
   <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustx-master" />
 
@@ -36,6 +36,5 @@
   <project path="meta-virtualization" name="meta-virtualization" />
   <project path="meta-intel" name="meta-intel" />
   <project path="meta-selinux" name="meta-selinux" />
-  <project path="meta-java" name="meta-java" />
 
 </manifest>
