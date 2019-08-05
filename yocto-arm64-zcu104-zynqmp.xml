@@ -37,6 +37,7 @@
   <project path="meta-intel" name="meta-intel" />
   <project path="meta-selinux" name="meta-selinux" />
   <project path="meta-java" name="meta-java" />
-  <project path="meta-xilinx" name="meta-xilinx" />
+  <project path="meta-xilinx" name="Xilinx/meta-xilinx" remote="github" revision="rel-v2019.1" />
+  <project path="meta-xilinx-tools" name="Xilinx/meta-xilinx-tools" remote="github" revision="rel-v2019.1" />
 
 </manifest>
