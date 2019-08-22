@@ -20,22 +20,21 @@
            sync-j="4" />
 
 
-  <project path="poky" name="poky" />
+  <project name="poky" revision="cb26830f765f03309c0663352cc5849491271be8" upstream="thud"/>
 
   <!-- MANIFEST Repo -->
-  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="master" />
-  <project path="trustme/build" name="trustme_build" remote="trustme" revision="master">
+  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="v0.1" />
+  <project path="trustme/build" name="trustme_build" remote="trustme" revision="v0.1">
      <copyfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
   </project>
-  <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustx-master" />
-
   <!-- TRUSTME -->
-  <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="master" />
+  <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="v0.1" />
+  <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="v0.1" />
 
-  <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
-  <project path="meta-virtualization" name="meta-virtualization" />
-  <project path="meta-intel" name="meta-intel" />
-  <project path="meta-selinux" name="meta-selinux" />
-  <project path="meta-java" name="meta-java" />
+  <project name="meta-openembedded" remote="oe" revision="9b3b907f30b0d5b92d58c7e68289184fda733d3e" upstream="thud"/>
+  <project name="meta-virtualization" revision="bbc38dc9d6d02e73c08df289bb22a292c2264e9b" upstream="thud"/>
+  <project name="meta-intel" revision="278f0b5fa2f1836635178bdc770e035d77ae03c7" upstream="thud"/>
+  <project name="meta-selinux" revision="fb6192aa2c5df8e80c5e6d4fa5448d574332f68f" upstream="thud"/>
+  <project name="meta-java" revision="b0c74493af1415dfd3b6caf77ebc677ed4e0fdaa" upstream="thud"/>
 
 </manifest>
