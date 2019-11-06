@@ -23,13 +23,13 @@
   <project name="poky" revision="cb26830f765f03309c0663352cc5849491271be8" upstream="thud"/>
 
   <!-- MANIFEST Repo -->
-  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="v0.1.1" />
-  <project path="trustme/build" name="trustme_build" remote="trustme" revision="v0.1.1">
+  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="refs/tags/v0.1.1" />
+  <project path="trustme/build" name="trustme_build" remote="trustme" revision="refs/tags/v0.1.1">
      <copyfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
   </project>
   <!-- TRUSTME -->
-  <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="v0.1.1" />
-  <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="v0.1.1" />
+  <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="refs/tags/v0.1.1" />
+  <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="refs/tags/v0.1.1" />
 
   <project name="meta-openembedded" remote="oe" revision="9b3b907f30b0d5b92d58c7e68289184fda733d3e" upstream="thud"/>
   <project name="meta-virtualization" revision="bbc38dc9d6d02e73c08df289bb22a292c2264e9b" upstream="thud"/>
