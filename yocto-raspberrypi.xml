@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+
+  <!--     REMOTES     -->
+  <remote name="trustme"
+    fetch="https://github.com/trustm3/"/>
+
+  <remote  name="yocto"
+	  fetch="https://git.yoctoproject.org/git/"/>
+
+  <remote  name="oe"
+    fetch="git://git.openembedded.org/"/>
+
+  <remote  name="github"
+    fetch="https://github.com/"/>
+
+  <!--     DEFAULTS    -->
+  <default revision="thud"
+           remote="yocto"
+           sync-j="4" />
+
+
+  <project name="poky" revision="cb26830f765f03309c0663352cc5849491271be8" upstream="thud"/>
+
+  <!-- MANIFEST Repo -->
+  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="refs/tags/v0.1.1" />
+  <project path="trustme/build" name="trustme_build" remote="trustme" revision="refs/tags/v0.1.1">
+     <copyfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
+  </project>
+  <!-- TRUSTME -->
+  <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="refs/tags/v0.1.1" />
+  <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="refs/tags/v0.1.1" />
+
+  <project name="meta-openembedded" remote="oe" revision="9b3b907f30b0d5b92d58c7e68289184fda733d3e" upstream="thud"/>
+  <project name="meta-virtualization" revision="bbc38dc9d6d02e73c08df289bb22a292c2264e9b" upstream="thud"/>
+  <project name="meta-intel" revision="278f0b5fa2f1836635178bdc770e035d77ae03c7" upstream="thud"/>
+  <project name="meta-selinux" revision="fb6192aa2c5df8e80c5e6d4fa5448d574332f68f" upstream="thud"/>
+  <project name="meta-java" revision="b0c74493af1415dfd3b6caf77ebc677ed4e0fdaa" upstream="thud"/>
+  <project name="meta-raspberrypi" revision="4e5be97d75668804694412f9b86e9291edb38b9d" upstream="thud"/>
+
+</manifest>
