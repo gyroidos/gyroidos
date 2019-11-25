@@ -31,6 +31,7 @@
 
   <!-- TRUSTME -->
   <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="master" />
+  <project path="meta-trustx-intel" name="meta-trustx-intel" remote="trustme" revision="master" />
 
   <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
   <project path="meta-virtualization" name="meta-virtualization" />
