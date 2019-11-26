@@ -30,10 +30,10 @@
   <!-- TRUSTME -->
   <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="refs/tags/v0.1.1" />
   <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="refs/tags/v0.1.1" />
+  <project path="meta-trustx-rpi" name="meta-trustx-rpi" remote="trustme" revision="refs/tags/v0.1.1" />
 
   <project name="meta-openembedded" remote="oe" revision="9b3b907f30b0d5b92d58c7e68289184fda733d3e" upstream="thud"/>
   <project name="meta-virtualization" revision="bbc38dc9d6d02e73c08df289bb22a292c2264e9b" upstream="thud"/>
-  <project name="meta-intel" revision="278f0b5fa2f1836635178bdc770e035d77ae03c7" upstream="thud"/>
   <project name="meta-selinux" revision="fb6192aa2c5df8e80c5e6d4fa5448d574332f68f" upstream="thud"/>
   <project name="meta-java" revision="b0c74493af1415dfd3b6caf77ebc677ed4e0fdaa" upstream="thud"/>
   <project name="meta-raspberrypi" revision="4e5be97d75668804694412f9b86e9291edb38b9d" upstream="thud"/>
