@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+
+  <!--     REMOTES     -->
+  <remote name="trustme"
+	  fetch="https://github.com/trustm3/"/>
+
+  <remote  name="yocto"
+	  fetch="https://git.yoctoproject.org/git/"/>
+
+  <remote  name="oe"
+    fetch="git://git.openembedded.org/"/>
+
+  <remote  name="freescale"
+    fetch="https://github.com/Freescale"/>
+
+  <remote  name="github"
+    fetch="https://github.com/"/>
+
+  <remote name="toradex"
+    fetch="https://git.toradex.com"/>
+
+  <!--     DEFAULTS    -->
+  <default revision="thud"
+           remote="yocto"
+           sync-j="4" />
+
+
+  <project path="poky" name="poky" />
+
+  <!-- MANIFEST Repo -->
+  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="master" />
+  <project path="trustme/build" name="trustme_build" remote="trustme" revision="master">
+     <copyfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
+  </project>
+  <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustx-master" />
+
+  <!-- TRUSTME -->
+  <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="master" />
+  <project path="meta-trustx-nxp" name="meta-trustx-nxp" remote="trustme" revision="master" />
+
+  <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
+  <project path="meta-virtualization" name="meta-virtualization" />
+  <project path="meta-intel" name="meta-intel" />
+  <project path="meta-selinux" name="meta-selinux" />
+  <project path="meta-java" name="meta-java" />
+
+  <!-- Freescale -->
+  <project path="meta-freescale" name="meta-freescale" remote="yocto" />
+  <project path="meta-freescale-3rdparty" name="meta-freescale-3rdparty" remote="freescale" />
+  <project path="meta-freescale-distro" name="meta-freescale-distro" remote="freescale" />
+
+  <!-- Toradex -->
+  <project path="meta-toradex-bsp-common" name="meta-toradex-bsp-common.git" remote="toradex" revision="d7265604f72ddcc5ca1c443847c1244952700f2d" upstream="thud"/>
+  <project path="meta-toradex-nxp" name="meta-toradex-nxp.git" remote="toradex" revision="ba278cfe4fa79db91727b783f7f900ab72833d36" upstream="thud"/>
+</manifest>
