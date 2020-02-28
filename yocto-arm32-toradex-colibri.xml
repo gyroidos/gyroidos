@@ -21,7 +21,7 @@
     fetch="https://git.toradex.com"/>
 
   <!--     DEFAULTS    -->
-  <default revision="thud"
+  <default revision="zeus"
            remote="yocto"
            sync-j="4" />
 
@@ -36,8 +36,8 @@
   <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustx-master" />
 
   <!-- TRUSTME -->
-  <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="master" />
-  <project path="meta-trustx-nxp" name="meta-trustx-nxp" remote="trustme" revision="master" />
+  <project path="meta-trustx" name="meta-trustx" remote="trustme" />
+  <project path="meta-trustx-nxp" name="meta-trustx-nxp" remote="trustme" />
 
   <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
   <project path="meta-virtualization" name="meta-virtualization" />
@@ -51,6 +51,6 @@
   <project path="meta-freescale-distro" name="meta-freescale-distro" remote="freescale" />
 
   <!-- Toradex -->
-  <project path="meta-toradex-bsp-common" name="meta-toradex-bsp-common.git" remote="toradex" revision="d7265604f72ddcc5ca1c443847c1244952700f2d" upstream="thud"/>
-  <project path="meta-toradex-nxp" name="meta-toradex-nxp.git" remote="toradex" revision="ba278cfe4fa79db91727b783f7f900ab72833d36" upstream="thud"/>
+  <project path="meta-toradex-bsp-common" name="meta-toradex-bsp-common.git" remote="toradex" />
+  <project path="meta-toradex-nxp" name="meta-toradex-nxp.git" remote="toradex" />
 </manifest>
