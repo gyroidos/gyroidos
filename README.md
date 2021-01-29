@@ -4,7 +4,7 @@ These are the manifest files of **trust|me**
 Supported platforms are embedded arm as well as x86 systems.
 
 # Main Code Repository
-The main code resitory containing CML daemons including the contaienr manager (cmld) itslef,
+The main code repository containing the CML daemons including the container manager (cmld) itself,
 is provided in
 [device_fraunhofer_common_cml](https://github.com/trustm3/device_fraunhofer_common_cml)
 
