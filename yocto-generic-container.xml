@@ -15,7 +15,7 @@
     fetch="https://github.com/"/>
 
   <!--     DEFAULTS    -->
-  <default revision="zeus"
+  <default revision="dunfell"
            remote="yocto"
            sync-j="4" />
 

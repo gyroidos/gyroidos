@@ -21,7 +21,7 @@
     fetch="https://git.toradex.com"/>
 
   <!--     DEFAULTS    -->
-  <default revision="zeus"
+  <default revision="dunfell"
            remote="yocto"
            sync-j="4" />
 
