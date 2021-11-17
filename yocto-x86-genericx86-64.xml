@@ -35,7 +35,6 @@
 
   <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
   <project path="meta-virtualization" name="meta-virtualization" />
-  <project path="meta-selinux" name="meta-selinux" />
   <project path="meta-java" name="meta-java" />
 
 </manifest>
