@@ -3,7 +3,7 @@
 
   <!--     REMOTES     -->
   <remote name="trustme"
-	  fetch="https://github.com/trustm3/"/>
+	  fetch="https://github.com/srinidhih2/"/>
 
   <remote  name="yocto"
 	  fetch="https://git.yoctoproject.org/git/"/>
@@ -51,6 +51,6 @@
   <project path="meta-freescale-distro" name="meta-freescale-distro" remote="freescale" />
 
   <!-- Toradex -->
-  <project path="meta-toradex-bsp-common" name="meta-toradex-bsp-common.git" remote="toradex" />
-  <project path="meta-toradex-nxp" name="meta-toradex-nxp.git" remote="toradex" />
+  <project path="meta-toradex-bsp-common" name="meta-toradex-bsp-common.git" remote="toradex" revision="dunfell-5.x.y" />
+  <project path="meta-toradex-nxp" name="meta-toradex-nxp.git" remote="toradex" revision="dunfell-5.x.y" />
 </manifest>
