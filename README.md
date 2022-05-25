@@ -1,8 +1,8 @@
-These are the manifest files of **trust|me**
+These are the manifest files of **GyroidOS**
 
-**trust|me** abbreviates “trusted mobile equipment” and is a multi-arch OS-level virtualization solution with additional focus on platform security based on hardware features.
+**GyroidOS** is a multi-arch OS-level virtualization solution with additional focus on platform security based on hardware features.
 Supported platforms are embedded arm as well as x86 systems.
 
-# Build and run trust|me
+# Build and run GyroidOS
 
-See Documentation on [trustm3.github.io](https://trustm3.github.io)
+See Documentation on [gyroidos.github.io](https://gyroidos.github.io)
