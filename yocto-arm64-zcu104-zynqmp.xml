@@ -2,8 +2,8 @@
 <manifest>
 
   <!--     REMOTES     -->
-  <remote name="trustme"
-    fetch="https://github.com/trustm3/"/>
+  <remote name="gyroidos"
+    fetch="https://github.com/gyroidos/"/>
 
   <remote  name="yocto"
 	  fetch="https://git.yoctoproject.org/git/"/>
@@ -23,15 +23,15 @@
   <project path="poky" name="poky" />
 
   <!-- MANIFEST Repo -->
-  <project path="trustme/manifest" name="trustme_main" remote="trustme" revision="master" />
-  <project path="trustme/build" name="trustme_build" remote="trustme" revision="master">
+  <project path="gyroidos/manifest" name="gyroidos" remote="gyroidos" revision="master" />
+  <project path="gyroidos/build" name="gyroidos_build" remote="gyroidos" revision="master">
      <copyfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
   </project>
-  <project path="trustme/cml" name="device_fraunhofer_common_cml" remote="trustme" revision="trustx-master" />
+  <project path="gyroidos/cml" name="cml" remote="gyroidos" revision="trustx-master" />
 
   <!-- TRUSTME -->
-  <project path="meta-trustx" name="meta-trustx" remote="trustme" revision="master" />
-  <project path="meta-trustx-xilinx" name="meta-trustx-xilinx" remote="trustme" revision="master" />
+  <project path="meta-trustx" name="meta-trustx" remote="gyroidos" revision="master" />
+  <project path="meta-trustx-xilinx" name="meta-trustx-xilinx" remote="gyroidos" revision="master" />
 
   <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
   <project path="meta-virtualization" name="meta-virtualization" />
@@ -40,6 +40,6 @@
   <project path="meta-java" name="meta-java" />
   <project path="meta-xilinx" name="Xilinx/meta-xilinx" remote="github" revision="rel-v2019.1" />
   <project path="meta-xilinx-tools" name="Xilinx/meta-xilinx-tools" remote="github" revision="rel-v2019.1" />
-  <project path="meta-optee" name="meta-optee" remote="trustme" revision="master" />
+  <project path="meta-optee" name="meta-optee" remote="gyroidos" revision="master" />
 
 </manifest>
