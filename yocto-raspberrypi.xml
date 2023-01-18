@@ -1,42 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <manifest>
+  <!-- DEFAULT REMOTES AND REPOS -->
+  <include name="gyroidos-base.xml" />
 
-  <!--     REMOTES     -->
-  <remote name="gyroidos"
-    fetch="https://github.com/gyroidos/"/>
-
-  <remote  name="yocto"
-	  fetch="https://git.yoctoproject.org/git/"/>
-
-  <remote  name="oe"
-    fetch="git://git.openembedded.org/"/>
-
-  <remote  name="github"
-    fetch="https://github.com/"/>
-
-  <!--     DEFAULTS    -->
-  <default revision="dunfell"
-           remote="yocto"
-           sync-j="4" />
-
-
-  <project path="poky" name="poky" />
-
-  <!-- MANIFEST Repo -->
-  <project path="trustme/manifest" name="gyroidos" remote="gyroidos" />
-  <project path="trustme/build" name="gyroidos_build" remote="gyroidos">
-     <copyfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
-  </project>
-  <project path="trustme/cml" name="cml" remote="gyroidos" />
-
-  <!-- TRUSTME -->
-  <project path="meta-trustx" name="meta-trustx" remote="gyroidos" />
+  <!-- TARGET SPECIFICS -->
   <project path="meta-trustx-rpi" name="meta-trustx-rpi" remote="gyroidos" />
-
-  <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
-  <project path="meta-virtualization" name="meta-virtualization" />
-  <project path="meta-selinux" name="meta-selinux" />
-  <project path="meta-java" name="meta-java" />
   <project path="meta-raspberrypi" name="meta-raspberrypi" />
-
 </manifest>
