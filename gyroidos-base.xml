@@ -15,7 +15,7 @@
     fetch="https://github.com/"/>
 
   <!--     DEFAULTS    -->
-  <default revision="dunfell"
+  <default revision="kirkstone"
            remote="yocto"
            sync-j="4" />
 
