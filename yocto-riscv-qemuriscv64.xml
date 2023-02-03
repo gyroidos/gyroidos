@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- DEFAULT REMOTES AND REPOS -->
+  <include name="gyroidos-base.xml" />
+
+  <!-- TARGET SPECIFICS -->
+  <project path="meta-gyroidos-riscv" name="meta-gyroidos-riscv" remote="gyroidos" />
+</manifest>
