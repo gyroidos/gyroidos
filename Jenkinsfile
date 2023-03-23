@@ -245,9 +245,12 @@ pipeline {
 									export ssh_port="222$(expr ${port_tmp} % 10)"
 									export vnc_port="4$(expr ${port_tmp} % 10)"
 
-									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode  ${BUILDTYPE} --skip-rootca --dir ${WORKSPACE} --builddir out-${BUILDTYPE} --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "${BRANCH_NAME}$(echo ${BUILDTYPE} | head -c2)" --ssh "${ssh_port}" --kill --vnc "${vnc_port}"'
+									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode  ${BUILDTYPE} --skip-rootca --dir ${WORKSPACE} --builddir out-${BUILDTYPE} --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "${BRANCH_NAME}$(echo ${BUILDTYPE} | head -c2)" --ssh "${ssh_port}" --kill --vnc "${vnc_port}" --log-dir out-${BUILDTYPE}/cml_logs'
 								'''
 							}
+
+							echo "Archiving CML logs"
+							archiveArtifacts artifacts: 'out-**/cml_logs/**, cml_logs/**', fingerprint: true, allowEmptyArchive: true
 
 							script {
 								if ('FAILURE' == currentBuild.result) {
@@ -286,6 +289,9 @@ pipeline {
 							bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-schsm --pki "${WORKSPACE}/out-schsm/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --kill --enable-schsm ${PHYSHSM} 12345678'
 						'''
 					}
+
+					echo "Archiving CML logs"
+					archiveArtifacts artifacts: 'out-schsm/cml_logs', fingerprint: true, allowEmptyArchive: true
 
 					script {
 						if ('FAILURE' == currentBuild.result) {
