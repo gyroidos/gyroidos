@@ -28,6 +28,7 @@ pipeline {
 					branches="${PR_BRANCHES}"
 
 					meta_repos="meta-trustx|meta-trustx-intel|meta-trustx-rpi|meta-trustx-nxp"
+					cml_repo="cml"
 					build_repo="gyroidos_build"
 					branch_regex="PR-([0-9]+)"
 					echo $branches | tr ',' '\n' | while read -r line; do
@@ -40,6 +41,16 @@ pipeline {
 <manifest>\n\
 <remove-project name=\\\"$project\\\" />\n\
 <project path=\\\"$project\\\" name=\\\"$project\\\" remote=\\\"gyroidos\\\" revision=\\\"$revision\\\" />\n\
+</manifest>" >> .repo/local_manifests/$project.xml
+						elif [[ "$line" =~ ($cml_repo)=$branch_regex ]]; then
+							project="${BASH_REMATCH[1]}"
+							revision="refs/pull/${BASH_REMATCH[2]}/head"
+
+							echo "\
+<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\n\
+<manifest>\n\
+<remove-project name=\\\"$project\\\" />\n\
+<project path=\\\"trustme/cml\\\" name=\\\"$project\\\" remote=\\\"gyroidos\\\" revision=\\\"$revision\\\" />\n\
 </manifest>" >> .repo/local_manifests/$project.xml
 						elif [[ "$line" =~ ($build_repo)=$branch_regex ]]; then
 							project="${BASH_REMATCH[1]}"
