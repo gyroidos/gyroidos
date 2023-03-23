@@ -161,7 +161,7 @@ pipeline {
 								}
 
 								script {
-									if ("" == env.CHANGE_TARGET && "dunfell" == env.BRANCH_NAME)  {
+									if ("" == env.CHANGE_TARGET && "kirkstone" == env.BRANCH_NAME && "" == env.PR_BRANCHES && "x86" == env.GYROID_ARCH)  {
 										lock ('sync-mirror') {
 											script {
 												catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
