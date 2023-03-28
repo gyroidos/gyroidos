@@ -91,7 +91,7 @@ pipeline {
 						agent {
 							dockerfile {
 								dir ".manifests"
-								args '--entrypoint=\'\' -v /yocto_mirror/${env.YOCTO_VERSION}/sources:/source_mirror -v /yocto_mirror/${env.YOCTO_VERSION}/sstate-cache:/sstate_mirror --env BUILDNODE="${env.NODE_NAME}"'
+								args '--entrypoint=\'\' -v /yocto_mirror/${env.YOCTO_VERSION}/${GYROID_ARCH}/sources:/source_mirror -v /yocto_mirror/${env.YOCTO_VERSION}/${GYROID_ARCH}/sstate-cache:/sstate_mirror --env BUILDNODE="${env.NODE_NAME}"'
 								reuseNode false
 							}
 						}
@@ -165,7 +165,7 @@ pipeline {
 								}
 
 								script {
-									if ("" == env.CHANGE_TARGET && env.YOCTO_VERSION == env.BRANCH_NAME && "" == env.PR_BRANCHES && "x86" == env.GYROID_ARCH)  {
+									if ("" == env.CHANGE_TARGET && env.YOCTO_VERSION == env.BRANCH_NAME && "" == env.PR_BRANCHES) {
 										lock ('sync-mirror') {
 											script {
 												catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
