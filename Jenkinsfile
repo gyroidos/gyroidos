@@ -2,6 +2,10 @@ pipeline {
 	agent any
 	options { checkoutToSubdirectory('.manifests') }
 
+	environment {
+		YOCTO_VERSION = 'kirkstone'
+	}
+
 	parameters {
 		choice(name: 'GYROID_ARCH', choices: ['x86', 'arm', 'arm64'], description: 'GyroidOS Target Architecture')
 		choice(name: 'GYROID_MACHINE', choices: ['genericx86-64', 'apalis-imx8'], description: 'GyroidOS Target Machine (Must be compatible with GYROID_ARCH!)')
@@ -87,7 +91,7 @@ pipeline {
 						agent {
 							dockerfile {
 								dir ".manifests"
-								args '--entrypoint=\'\' -v /yocto_mirror/sources:/source_mirror -v /yocto_mirror/sstate-cache:/sstate_mirror --env BUILDNODE="${env.NODE_NAME}"'
+								args '--entrypoint=\'\' -v /yocto_mirror/${env.YOCTO_VERSION}/sources:/source_mirror -v /yocto_mirror/${env.YOCTO_VERSION}/sstate-cache:/sstate_mirror --env BUILDNODE="${env.NODE_NAME}"'
 								reuseNode false
 							}
 						}
@@ -161,7 +165,7 @@ pipeline {
 								}
 
 								script {
-									if ("" == env.CHANGE_TARGET && "kirkstone" == env.BRANCH_NAME && "" == env.PR_BRANCHES && "x86" == env.GYROID_ARCH)  {
+									if ("" == env.CHANGE_TARGET && env.YOCTO_VERSION == env.BRANCH_NAME && "" == env.PR_BRANCHES && "x86" == env.GYROID_ARCH)  {
 										lock ('sync-mirror') {
 											script {
 												catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
@@ -170,7 +174,15 @@ pipeline {
 															rsync -r out-${BUILDTYPE}/downloads/ /source_mirror/${BUILDTYPE}
 															exit 0
 														else
-															echo "Skipping sstate sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, /source_mirror/: $(ls /source_mirror/)"
+															echo "Skipping source_mirror sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, /source_mirror/: $(ls /source_mirror/)"
+															exit 1
+														fi
+
+														if [ -d "/sstate_mirror/${BUILDTYPE}" ];then
+															rsync -r out-${BUILDTYPE}/sstate-cache/ /sstate_mirror/${BUILDTYPE}
+															exit 0
+														else
+															echo "Skipping sstate_mirror sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, /sstate_mirror/: $(ls /sstate_mirror/)"
 															exit 1
 														fi
 													'''
