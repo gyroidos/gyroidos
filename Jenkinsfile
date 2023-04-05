@@ -4,6 +4,7 @@ pipeline {
 
 	environment {
 		YOCTO_VERSION = 'kirkstone'
+		CFG_GEN_TARBALLS = '1'
 	}
 
 	parameters {
@@ -25,7 +26,7 @@ pipeline {
 					git checkout -b "jenkins-ci"
 					cd ${WORKSPACE}
 
-					repo init -u ${WORKSPACE}/.manifests/.git -b "jenkins-ci" -m yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml
+					repo init -u ${WORKSPACE}/.manifests/.git -b "jenkins-ci" -m yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml --depth=1 
 
 					mkdir -p .repo/local_manifests
 
@@ -69,7 +70,7 @@ pipeline {
 						fi
 					done
 
-					repo sync
+					repo sync -j8 --current-branch --fail-fast
 				'''
 
 				stash includes: "meta-*/**, poky/**, trustme/**", name: 'ws-yocto', useDefaultExcludes: false, allowEmpty: false
@@ -137,7 +138,7 @@ pipeline {
 
 								echo "INHERIT += \\\"own-mirrors\\\"" >> conf/local.conf
 								echo "SOURCE_MIRROR_URL = \\\"file:///source_mirror/${BUILDTYPE}\\\"" >> conf/local.conf
-								echo "BB_GENERATE_MIRROR_TARBALLS = \\\"0\\\"" >> conf/local.conf
+								echo "BB_GENERATE_MIRROR_TARBALLS = \\\"1\\\"" >> conf/local.conf
 								echo "SSTATE_MIRRORS =+ \\\"file://.* file:///sstate_mirror/${BUILDTYPE}/PATH\\\"" >> conf/local.conf
 								cat conf/local.conf
 
@@ -221,9 +222,17 @@ pipeline {
 
 				stages {
 					stage('Integration Test') {
+						//agent {
+						//	node { label 'worker' }
+						//}
 						agent {
-							node { label 'worker' }
+							dockerfile {
+								dir ".manifests"
+								args '--entrypoint=\'\' --env BUILDNODE="${env.NODE_NAME}" -p 2222 -p 5901'
+								reuseNode false
+							}
 						}
+
 
 						options {
 							timeout(time: 30, unit: 'MINUTES')
@@ -249,15 +258,10 @@ pipeline {
 								sh label: 'Perform integration tests', script: '''
 									echo "Running on node $(hostname)"
 									echo "$PATH"
-									echo "VM name: $(echo ${BUILDTYPE} | head -c2)"
+									echo "VM name: vm-${BUILDTYPE}"
 
 
-									echo "Testing \"${BUILDTYPE}\" image"
-									export port_tmp="$(printf "%d\n" "'${BUILDTYPE}")"
-									export ssh_port="222$(expr ${port_tmp} % 10)"
-									export vnc_port="4$(expr ${port_tmp} % 10)"
-
-									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode  ${BUILDTYPE} --skip-rootca --dir ${WORKSPACE} --builddir out-${BUILDTYPE} --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "${BRANCH_NAME}$(echo ${BUILDTYPE} | head -c2)" --ssh "${ssh_port}" --kill --vnc "${vnc_port}" --log-dir out-${BUILDTYPE}/cml_logs'
+									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode  ${BUILDTYPE} --skip-rootca --dir ${WORKSPACE} --builddir out-${BUILDTYPE} --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "vm-${BUILDTYPE}" --ssh 2222 --kill --vnc 1 --log-dir out-${BUILDTYPE}/cml_logs'
 								'''
 							}
 
