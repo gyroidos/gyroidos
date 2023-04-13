@@ -12,7 +12,6 @@ pipeline {
 		choice(name: 'GYROID_MACHINE', choices: ['genericx86-64', 'apalis-imx8'], description: 'GyroidOS Target Machine (Must be compatible with GYROID_ARCH!)')
 		string(name: 'PR_BRANCHES', defaultValue: '', description: 'Comma separated list of pull request branches (e.g. meta-trustx=PR-177,meta-trustx-nxp=PR-13,gyroidos_build=PR-97)')
 	}
-
 	stages {
 		stage('Repo') {
 			steps {
@@ -20,6 +19,8 @@ pipeline {
 					#!/bin/bash
 					echo "Running on $(hostname)"
 					rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/*
+
+					env
 
 					cd ${WORKSPACE}/.manifests
 					git rev-parse --verify jenkins-ci && git branch -D jenkins-ci
@@ -75,8 +76,12 @@ pipeline {
 
 				stash includes: "meta-*/**, poky/**, trustme/**", name: 'ws-yocto', useDefaultExcludes: false, allowEmpty: false
 				stash includes: ".manifests/**", name: 'manifests', useDefaultExcludes: false, allowEmpty: false
+
+				echo "sources_path: /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}"
+				echo "sstate_path: /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}"
 			}
 		}
+
 
 		stage('Build + Test Images') {
 			// Build images in parallel
@@ -92,7 +97,7 @@ pipeline {
 						agent {
 							dockerfile {
 								dir ".manifests"
-								args '--entrypoint=\'\' -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sources:/source_mirror -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sstate-cache:/sstate_mirror --env BUILDNODE="${env.NODE_NAME}"'
+								args '--device=/dev/kvm --entrypoint=\'\' -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sources:/source_mirror -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sstate-cache:/sstate_mirror --env BUILDNODE="${env.NODE_NAME}"'
 								reuseNode false
 							}
 						}
@@ -140,6 +145,13 @@ pipeline {
 								echo "SOURCE_MIRROR_URL = \\\"file:///source_mirror/${BUILDTYPE}\\\"" >> conf/local.conf
 								echo "BB_GENERATE_MIRROR_TARBALLS = \\\"1\\\"" >> conf/local.conf
 								echo "SSTATE_MIRRORS =+ \\\"file://.* file:///sstate_mirror/${BUILDTYPE}/PATH\\\"" >> conf/local.conf
+
+								ls -al /source_mirror/${BUILDTYPE}
+								ls -al /sstate_mirror/${BUILDTYPE}
+
+								echo "BB_SIGNATURE_HANDLER = \\\"OEBasicHash\\\"" >> conf/local.conf
+								echo "BB_HASHSERVE = \\\"\\\"" >> conf/local.conf
+
 								cat conf/local.conf
 
 
@@ -166,7 +178,7 @@ pipeline {
 								}
 
 								script {
-									if ("" == env.CHANGE_TARGET && env.YOCTO_VERSION == env.BRANCH_NAME && "" == env.PR_BRANCHES) {
+									//if ("" == env.CHANGE_TARGET && env.YOCTO_VERSION == env.BRANCH_NAME && "" == env.PR_BRANCHES) {
 										lock ('sync-mirror') {
 											script {
 												catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
@@ -190,9 +202,9 @@ pipeline {
 												}
 											}
 										}
-									} else {
-										echo "Skipping sstate cache sync in PR build"
-									}
+//									} else {
+//										echo "Skipping sstate cache sync in PR build:  CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, YOCTO_VERSION==${YOCTO_VERSION},PR_BRANCHES==${PR_BRANCHES},"
+//									}
 								}
 
 								sh label: 'Compress trustmeimage.img', script: 'xz -T 0 -f out-${BUILDTYPE}/tmp/deploy/images/**/trustme_image/trustmeimage.img --keep'
@@ -225,12 +237,16 @@ pipeline {
 						//agent {
 						//	node { label 'worker' }
 						//}
+						//agent {
+						//	dockerfile {
+						//		dir ".manifests"
+						//		args '--entrypoint=\'\' --env BUILDNODE="${env.NODE_NAME}" -p 2222 -p 5901'
+						//		reuseNode false
+						//	}
+						//}
+
 						agent {
-							dockerfile {
-								dir ".manifests"
-								args '--entrypoint=\'\' --env BUILDNODE="${env.NODE_NAME}" -p 2222 -p 5901'
-								reuseNode false
-							}
+							node { label 'worker' }
 						}
 
 
@@ -239,20 +255,19 @@ pipeline {
 						}
 
 						steps {
-							cleanWs()
+							sh label: 'Clean workspace', script: 'rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/*'
 
-							unstash 'manifests'
-							script {
-								if ("dev" == env.BUILDTYPE) {
-									unstash 'img-dev'
-								} else if ("production" == env.BUILDTYPE){
-									unstash 'img-production'
-								} else if ("ccmode" == env.BUILDTYPE){
-									unstash 'img-ccmode'
-								} else {
-									error "Unkown build type"
-								}
-							}
+//							script {
+//								if ("dev" == env.BUILDTYPE) {
+//									unstash 'img-dev'
+//								} else if ("production" == env.BUILDTYPE){
+//									unstash 'img-production'
+//								} else if ("ccmode" == env.BUILDTYPE){
+//									unstash 'img-ccmode'
+//								} else {
+//									error "Unkown build type"
+//								}
+//							}
 
 							catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 								sh label: 'Perform integration tests', script: '''
@@ -261,7 +276,28 @@ pipeline {
 									echo "VM name: vm-${BUILDTYPE}"
 
 
-									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode  ${BUILDTYPE} --skip-rootca --dir ${WORKSPACE} --builddir out-${BUILDTYPE} --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "vm-${BUILDTYPE}" --ssh 2222 --kill --vnc 1 --log-dir out-${BUILDTYPE}/cml_logs'
+									export port_buildtype="$(expr $(printf "%d\n" "'${BUILDTYPE}") % 10)"
+
+									if [ -z "${CHANGE_TARGET}" ];then
+										echo "No PR-Build, using fixed port numbers"
+
+										export ssh_port="222${port_buildtype}"
+										export vnc_display="4${port_buildtype}"
+									else
+										echo "PR-Build, using port numbers based on PR"
+
+										echo ${BRANCH_NAME}
+										port_pr="$(echo -n "${BRANCH_NAME}" | sed 's/PR-\\([0-9]*\\)/\\1/g' | tail -c 2)"
+										export ssh_port="2${port_pr}${port_buildtype}"
+										export vnc_display="${port_pr}${port_buildtype}"
+									fi
+									
+									echo "ssh_port: $ssh_port"
+									echo "vnc_display: $vnc_display"
+
+
+									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode  ${BUILDTYPE} --skip-rootca --dir /yocto_mirror --builddir out-${BUILDTYPE} --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "vm-${BUILDTYPE}" --ssh "${ssh_port}" --kill --vnc "${vnc_port}" --log-dir out-${BUILDTYPE}/cml_logs'
+									#bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode  ${BUILDTYPE} --skip-rootca --dir ${WORKSPACE} --builddir out-${BUILDTYPE} --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "vm-${BUILDTYPE}" --ssh "${ssh_port}" --kill --vnc "${vnc_port}" --log-dir out-${BUILDTYPE}/cml_logs'
 								'''
 							}
 
@@ -279,6 +315,8 @@ pipeline {
 				}
 			}
 		}
+
+
 
 		stage ('Token Test') {
 			when {
@@ -301,6 +339,28 @@ pipeline {
 							echo "Running on node $(hostname)"
 							echo "$PATH"
 							echo "Physhsm: ${PHYSHSM}"
+
+
+							if [ -z "${CHANGE_TARGET}" ];then
+								echo "No PR-Build, using fixed port numbers"
+	
+								export port_tmp="$(printf "%d\n" "'${BUILDTYPE}")"
+								export ssh_port="222$(expr ${port_tmp} % 10)"
+								export vnc_port="4$(expr ${port_tmp} % 10)"
+							else
+								echo "PR-Build, using port numbers based on PR"
+	
+								echo ${BRANCH_NAME}
+								export ssh_port="$(printf "2%03d" "$(echo "${BRANCH_NAME}" | sed 's/PR-\\([0-9]\\{1,3\\}\\).*/\\1/g')")"
+								export vnc_display="$(echo "${BRANCH_NAME}" | sed 's/PR-\\([0-9]\\{1,2\\}\\).*/\\1/g')"
+	
+							fi
+							
+							echo "ssh_port: $ssh_port"
+							echo "vnc_display: $vnc_display"
+
+
+
 
 							bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-schsm --pki "${WORKSPACE}/out-schsm/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --kill --enable-schsm ${PHYSHSM} 12345678'
 						'''
