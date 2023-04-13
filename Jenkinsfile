@@ -4,7 +4,6 @@ pipeline {
 
 	environment {
 		YOCTO_VERSION = 'kirkstone'
-		CFG_GEN_TARBALLS = '1'
 	}
 
 	parameters {
@@ -21,12 +20,14 @@ pipeline {
 					echo "Running on $(hostname)"
 					rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/*
 
+					env
+
 					cd ${WORKSPACE}/.manifests
 					git rev-parse --verify jenkins-ci && git branch -D jenkins-ci
 					git checkout -b "jenkins-ci"
 					cd ${WORKSPACE}
 
-					repo init -u ${WORKSPACE}/.manifests/.git -b "jenkins-ci" -m yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml --depth=1 
+					repo init --depth=1 -u ${WORKSPACE}/.manifests/.git -b "jenkins-ci" -m yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml
 
 					mkdir -p .repo/local_manifests
 
@@ -139,7 +140,12 @@ pipeline {
 								echo "INHERIT += \\\"own-mirrors\\\"" >> conf/local.conf
 								echo "SOURCE_MIRROR_URL = \\\"file:///source_mirror/${BUILDTYPE}\\\"" >> conf/local.conf
 								echo "BB_GENERATE_MIRROR_TARBALLS = \\\"1\\\"" >> conf/local.conf
+
 								echo "SSTATE_MIRRORS =+ \\\"file://.* file:///sstate_mirror/${BUILDTYPE}/PATH\\\"" >> conf/local.conf
+
+								echo "BB_SIGNATURE_HANDLER = \\\"OEBasicHash\\\"" >> conf/local.conf
+								echo "BB_HASHSERVE = \\\"\\\"" >> conf/local.conf
+
 								cat conf/local.conf
 
 
@@ -222,26 +228,17 @@ pipeline {
 
 				stages {
 					stage('Integration Test') {
-						//agent {
-						//	node { label 'worker' }
-						//}
 						agent {
-							dockerfile {
-								dir ".manifests"
-								args '--entrypoint=\'\' --env BUILDNODE="${env.NODE_NAME}" -p 2222 -p 5901'
-								reuseNode false
-							}
+							node { label 'worker' }
 						}
-
 
 						options {
 							timeout(time: 30, unit: 'MINUTES')
 						}
 
 						steps {
-							cleanWs()
+							sh label: 'Clean workspace', script: 'rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/*'
 
-							unstash 'manifests'
 							script {
 								if ("dev" == env.BUILDTYPE) {
 									unstash 'img-dev'
@@ -258,10 +255,28 @@ pipeline {
 								sh label: 'Perform integration tests', script: '''
 									echo "Running on node $(hostname)"
 									echo "$PATH"
-									echo "VM name: vm-${BUILDTYPE}"
 
+									export port_buildtype="$(expr $(printf "%d\n" "'${BUILDTYPE}") % 10)"
 
-									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode  ${BUILDTYPE} --skip-rootca --dir ${WORKSPACE} --builddir out-${BUILDTYPE} --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "vm-${BUILDTYPE}" --ssh 2222 --kill --vnc 1 --log-dir out-${BUILDTYPE}/cml_logs'
+									if [ -z "${CHANGE_TARGET}" ];then
+										echo "No PR-Build, using fixed port numbers"
+
+										export ssh_port="222${port_buildtype}"
+										export vnc_display="4${port_buildtype}"
+									else
+										echo "PR-Build, using port numbers based on PR"
+
+										echo ${BRANCH_NAME}
+										port_pr="$(echo -n "${BRANCH_NAME}" | sed 's/PR-\\([0-9]*\\)/\\1/g' | tail -c 2)"
+										export ssh_port="2${port_pr}${port_buildtype}"
+										export vnc_display="${port_pr}${port_buildtype}"
+									fi
+									
+									echo "ssh_port: $ssh_port"
+									echo "vnc_display: $vnc_display"
+									echo "VM name: vm-$ssh_port"
+
+									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode "${BUILDTYPE}" --skip-rootca --dir "${WORKSPACE}" --builddir "out-${BUILDTYPE}" --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "vm-${BUILDTYPE}" --ssh "${ssh_port}" --kill --vnc "${vnc_display}" --log-dir "${WORKSPACE}/out-${BUILDTYPE}/cml_logs"'
 								'''
 							}
 
@@ -302,7 +317,8 @@ pipeline {
 							echo "$PATH"
 							echo "Physhsm: ${PHYSHSM}"
 
-							bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-schsm --pki "${WORKSPACE}/out-schsm/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --kill --enable-schsm ${PHYSHSM} 12345678'
+
+							bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-schsm --pki "${WORKSPACE}/out-schsm/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --vnc 1 --kill --enable-schsm ${PHYSHSM} 12345678'
 						'''
 					}
 
