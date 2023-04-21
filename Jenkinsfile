@@ -172,32 +172,34 @@ pipeline {
 								}
 
 								script {
-									if (! env.CHANGE_TARGET && ! env.PR_BRANCHES && env.YOCTO_VERSION == env.BRANCH_NAME) {
-										lock ('sync-mirror') {
-											script {
-												catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-													sh label: 'Syncing mirrors', script: '''
-														if [ -d "/source_mirror/${BUILDTYPE}" ];then
-															rsync -r out-${BUILDTYPE}/downloads/ /source_mirror/${BUILDTYPE}
-														else
-															echo "Skipping source_mirror sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, /source_mirror/: $(ls /source_mirror/)"
-															exit 1
-														fi
+									catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+										if (! env.CHANGE_TARGET && ! env.PR_BRANCHES && env.YOCTO_VERSION == env.BRANCH_NAME) {
+											lock ('sync-mirror') {
+												script {
+													catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+														sh label: 'Syncing mirrors', script: '''
+															if [ -d "/source_mirror/${BUILDTYPE}" ];then
+																rsync -r out-${BUILDTYPE}/downloads/ /source_mirror/${BUILDTYPE}
+															else
+																echo "Skipping source_mirror sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, /source_mirror/: $(ls /source_mirror/)"
+																exit 1
+															fi
 
-														if [ -d "/sstate_mirror/${BUILDTYPE}" ];then
-															rsync -r out-${BUILDTYPE}/sstate-cache/ /sstate_mirror/${BUILDTYPE}
-														else
-															echo "Skipping sstate_mirror sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, /sstate_mirror/: $(ls /sstate_mirror/)"
-															exit 1
-														fi
+															if [ -d "/sstate_mirror/${BUILDTYPE}" ];then
+																rsync -r out-${BUILDTYPE}/sstate-cache/ /sstate_mirror/${BUILDTYPE}
+															else
+																echo "Skipping sstate_mirror sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, /sstate_mirror/: $(ls /sstate_mirror/)"
+																exit 1
+															fi
 
-														exit 0
-													'''
+															exit 0
+														'''
+													}
 												}
 											}
-										}
-									} else {
+										} else {
 										echo "Skipping sstate cache sync in PR build CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, PR_BRANCHES==${PR_BRANCHES},YOCTO_VERSION==${YOCTO_VERSION},"
+										}
 									}
 								}
 
