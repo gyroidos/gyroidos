@@ -173,7 +173,7 @@ pipeline {
 
 								script {
 									catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-										if (! env.CHANGE_TARGET && ! env.PR_BRANCHES && env.YOCTO_VERSION == env.BRANCH_NAME) {
+										if (env.CHANGE_TARGET == null && env.PR_BRANCHES == null && env.YOCTO_VERSION == env.BRANCH_NAME) {
 											lock ('sync-mirror') {
 												script {
 													catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
