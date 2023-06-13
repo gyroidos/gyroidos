@@ -10,6 +10,7 @@ pipeline {
 		choice(name: 'GYROID_ARCH', choices: ['x86', 'arm', 'arm64'], description: 'GyroidOS Target Architecture')
 		choice(name: 'GYROID_MACHINE', choices: ['genericx86-64', 'apalis-imx8'], description: 'GyroidOS Target Machine (Must be compatible with GYROID_ARCH!)')
 		string(name: 'PR_BRANCHES', defaultValue: '', description: 'Comma separated list of pull request branches (e.g. meta-trustx=PR-177,meta-trustx-nxp=PR-13,gyroidos_build=PR-97)')
+		choice(name: 'BUILD_INSTALLER', choices: ['y', 'n'], description: 'Build the GyroidOS installer (x86 only)')
 	}
 
 	stages {
@@ -153,6 +154,10 @@ pipeline {
 
 								bitbake trustx-cml-initramfs multiconfig:container:trustx-core
 								bitbake trustx-cml
+
+								if [ "y" = "${BUILD_INSTALLER}" ];then
+									 bitbake multiconfig:installer:trustx-installer
+								fi
 							'''
 						}
 						post {
@@ -205,7 +210,13 @@ pipeline {
 
 								sh label: 'Compress trustmeimage.img', script: 'xz -T 0 -f out-${BUILDTYPE}/tmp/deploy/images/**/trustme_image/trustmeimage.img --keep'
 
-								archiveArtifacts artifacts: 'out-**/tmp/deploy/images/**/trustme_image/trustmeimage.img.xz, out-**/test_certificates/**', fingerprint: true
+								script {
+									if ("y" == env.BUILD_INSTALLER) {
+										sh label: 'Compress trustmeinstaller.img', script: 'xz -T 0 -f out-${BUILDTYPE}/tmp/deploy/images/**/trustme_image/trustmeinstaller.img --keep'
+									}
+								}
+
+								archiveArtifacts artifacts: 'out-**/tmp/deploy/images/**/trustme_image/trustmeimage.img.xz, out-**/tmp/deploy/images/**/trustme_image/trustmeinstaller.img.xz, out-**/test_certificates/**', fingerprint: true
 							}
 						}
 					}
