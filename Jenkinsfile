@@ -139,7 +139,7 @@ pipeline {
 								cd ${WORKSPACE}/out-${BUILDTYPE}
 
 								echo "INHERIT += \\\"own-mirrors\\\"" >> conf/local.conf
-								echo "SOURCE_MIRROR_URL = \\\"file:///source_mirror/${BUILDTYPE}\\\"" >> conf/local.conf
+								echo "SOURCE_MIRROR_URL = \\\"file:///source_mirror\\\"" >> conf/local.conf
 								echo "BB_GENERATE_MIRROR_TARBALLS = \\\"1\\\"" >> conf/local.conf
 
 								echo "SSTATE_MIRRORS =+ \\\"file://.* file:///sstate_mirror/${BUILDTYPE}/PATH\\\"" >> conf/local.conf
@@ -183,17 +183,17 @@ pipeline {
 												script {
 													catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
 														sh label: 'Syncing mirrors', script: '''
-															if [ -d "/source_mirror/${BUILDTYPE}" ];then
-																rsync -r out-${BUILDTYPE}/downloads/ /source_mirror/${BUILDTYPE}
+															if [ -d "/source_mirror" ];then
+																rsync -r --ignore-existing --no-devices --no-specials --no-links  out-${BUILDTYPE}/downloads/ /source_mirror
 															else
 																echo "Skipping source_mirror sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME}, PR_BRANCHES==${PR_BRANCHES}, /source_mirror/: $(ls /source_mirror/)"
 																exit 1
 															fi
 
-															if [ -d "/sstate_mirror/${BUILDTYPE}" ];then
-																rsync -r out-${BUILDTYPE}/sstate-cache/ /sstate_mirror/${BUILDTYPE}
+															if [ -d "/sstate_mirror" ];then
+																rsync -r --no-devices --no-specials --no-links out-${BUILDTYPE}/sstate-cache/ /sstate_mirror/${BUILDTYPE}
 															else
-																echo "Skipping sstate_mirror sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME},  PR_BRANCHES==${PR_BRANCHES}, /sstate_mirror/: $(ls /sstate_mirror/)"
+																echo "Skipping sstate_mirror sync, CHANGE_TARGET==${CHANGE_TARGET}, BRANCH_NAME==${BRANCH_NAME},  PR_BRANCHES==${PR_BRANCHES}, /sstate_mirror/${BUILDTYPE}: $(ls /sstate_mirror/)"
 																exit 1
 															fi
 
