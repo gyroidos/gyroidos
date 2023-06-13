@@ -331,7 +331,7 @@ pipeline {
 							echo "Physhsm: ${PHYSHSM}"
 
 
-							bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-schsm --pki "${WORKSPACE}/out-schsm/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --vnc 1 --kill --enable-schsm ${PHYSHSM} 12345678'
+							bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-schsm --pki "${WORKSPACE}/out-schsm/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --vnc 1 --kill --enable-schsm ${PHYSHSM} 12345678 --log-dir "${WORKSPACE}/out-schsm/cml_logs"'
 						'''
 					}
 
