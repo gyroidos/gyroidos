@@ -101,8 +101,17 @@ pipeline {
 						steps {
 							sh label: 'Clean up workspace', script: '''
 								find "${WORKSPACE}" -exec rm -fr {} \\;
+
+								echo "Running on host: ${NODE_NAME}"
+
+									 ping -c1 8.8.8.8
+
+                                     ping -c1 google.de
+
+                                     wget https://www.yoctoproject.org/connectivity.html
 							'''
 
+                                                     
 							unstash 'ws-yocto'
 							sh label: 'Perform Yocto build', script: '''
 								echo "Running on host: ${NODE_NAME}"
