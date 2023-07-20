@@ -216,7 +216,7 @@ pipeline {
 									}
 								}
 
-								archiveArtifacts artifacts: 'out-**/tmp/deploy/images/**/trustme_image/trustmeimage.img.xz, out-**/tmp/deploy/images/**/trustme_image/trustmeinstaller.img.xz, out-**/test_certificates/**', fingerprint: true
+								archiveArtifacts artifacts: 'out-**/tmp/deploy/images/**/trustme_image/trustmeimage.img.xz, out-**/tmp/deploy/images/**/trustme_image/trustmeinstaller.img.xz, out-**/test_certificates/**, out-**/tmp/deploy/images/**/cml_updates/kernel-**.tar', fingerprint: true
 							}
 						}
 					}
