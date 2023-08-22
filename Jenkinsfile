@@ -1,6 +1,9 @@
 pipeline {
 	agent any
-	options { checkoutToSubdirectory('.manifests') }
+	options {
+		checkoutToSubdirectory('.manifests')
+		buildDiscarder(logRotator(numToKeepStr: '25'))
+	}
 
 	environment {
 		YOCTO_VERSION = 'kirkstone'
