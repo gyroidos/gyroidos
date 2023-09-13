@@ -274,7 +274,8 @@ pipeline {
 									if [ -z "${CHANGE_TARGET}" ];then
 										echo "No PR-Build, using fixed port numbers"
 
-										export ssh_port="222${port_buildtype}"
+										port_buildnr="$(expr $(printf "%d\n" "${BUILD_NUMBER}") % 100)"
+										export ssh_port="22${port_buildnr}${port_buildtype}"
 										export vnc_display="4${port_buildtype}"
 									else
 										echo "PR-Build, using port numbers based on PR"
