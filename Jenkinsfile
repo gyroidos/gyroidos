@@ -4,6 +4,7 @@ pipeline {
 
 	environment {
 		YOCTO_VERSION = 'kirkstone'
+		KVM_GID = "${sh(script:'getent group kvm | cut -d: -f3', returnStdout: true).trim()}"
 	}
 
 	parameters {
@@ -242,7 +243,11 @@ pipeline {
 				stages {
 					stage('Integration Test') {
 						agent {
-							node { label 'worker' }
+							dockerfile {
+								dir ".manifests"
+								args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222'
+								label 'worker'
+							}
 						}
 
 						options {
@@ -269,28 +274,7 @@ pipeline {
 									echo "Running on node $(hostname)"
 									echo "$PATH"
 
-									export port_buildtype="$(expr $(printf "%d\n" "'${BUILDTYPE}") % 10)"
-
-									if [ -z "${CHANGE_TARGET}" ];then
-										echo "No PR-Build, using fixed port numbers"
-
-										port_buildnr="$(expr $(printf "%d\n" "${BUILD_NUMBER}") % 100)"
-										export ssh_port="22${port_buildnr}${port_buildtype}"
-										export vnc_display="4${port_buildtype}"
-									else
-										echo "PR-Build, using port numbers based on PR"
-
-										echo ${BRANCH_NAME}
-										port_pr="$(echo -n "${BRANCH_NAME}" | sed 's/PR-\\([0-9]*\\)/\\1/g' | tail -c 2)"
-										export ssh_port="2${port_pr}${port_buildtype}"
-										export vnc_display="${port_pr}${port_buildtype}"
-									fi
-									
-									echo "ssh_port: $ssh_port"
-									echo "vnc_display: $vnc_display"
-									echo "VM name: vm-$ssh_port"
-
-									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode "${BUILDTYPE}" --skip-rootca --dir "${WORKSPACE}" --builddir "out-${BUILDTYPE}" --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "vm-${BUILDTYPE}" --ssh "${ssh_port}" --kill --vnc "${vnc_display}" --log-dir "${WORKSPACE}/out-${BUILDTYPE}/cml_logs"'
+									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode "${BUILDTYPE}" --skip-rootca --dir "${WORKSPACE}" --builddir "out-${BUILDTYPE}" --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "testvm" --ssh 2222 --kill --vnc 1 --log-dir "${WORKSPACE}/out-${BUILDTYPE}/cml_logs"'
 								'''
 							}
 
