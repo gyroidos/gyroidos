@@ -4,6 +4,7 @@ pipeline {
 
 	environment {
 		YOCTO_VERSION = 'kirkstone'
+		BUILDUSER = "${sh(script:'id -u', returnStdout: true).trim()}"
 		KVM_GID = "${sh(script:'getent group kvm | cut -d: -f3', returnStdout: true).trim()}"
 	}
 
@@ -95,6 +96,7 @@ pipeline {
 						agent {
 							dockerfile {
 								dir ".manifests"
+								additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
 								args '--entrypoint=\'\' -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sources:/source_mirror -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sstate-cache:/sstate_mirror --env BUILDNODE="${env.NODE_NAME}"'
 								reuseNode false
 							}
@@ -245,6 +247,7 @@ pipeline {
 						agent {
 							dockerfile {
 								dir ".manifests"
+								additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
 								args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222'
 								label 'worker'
 							}
