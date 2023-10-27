@@ -248,7 +248,7 @@ pipeline {
 							dockerfile {
 								dir ".manifests"
 								additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-								args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222'
+								args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222 --env BUILDNODE="${env.NODE_NAME}"'
 								label 'worker'
 							}
 						}
@@ -274,7 +274,7 @@ pipeline {
 
 							catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 								sh label: 'Perform integration tests', script: '''
-									echo "Running on node $(hostname)"
+									echo "Running on host: ${NODE_NAME}"
 									echo "$PATH"
 
 									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode "${BUILDTYPE}" --skip-rootca --dir "${WORKSPACE}" --builddir "out-${BUILDTYPE}" --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "testvm" --ssh 2222 --kill --vnc 1 --log-dir "${WORKSPACE}/out-${BUILDTYPE}/cml_logs"'
