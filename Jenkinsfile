@@ -88,7 +88,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-							values 'dev', 'production', 'ccmode', 'schsm'
+							values 'dev', 'production', 'ccmode', 'schsm', 'asan'
 					}
 				}
 				stages {
@@ -115,7 +115,6 @@ pipeline {
 
 								if [ "dev" = ${BUILDTYPE} ];then
 									echo "Preparing Yocto workdir for development build"
-									SANITIZERS=y
 								elif [ "production" = "${BUILDTYPE}" ];then
 									echo "Preparing Yocto workdir for production build"
 									DEVELOPMENT_BUILD=n
@@ -126,8 +125,11 @@ pipeline {
 									CC_MODE=y
 								elif [ "schsm" = "${BUILDTYPE}" ];then
 									echo "Preparing Yocto workdir for dev mode build with schsm support"
-									SANITIZERS=y
 									ENABLE_SCHSM="1"
+								elif [ "asan" = "${BUILDTYPE}" ];then
+									echo "Preparing Yocto workdir for dev mode build with sanitizers enabled"
+									TRUSTME_SANITIZERS=y
+									git clone https://github.com/gyroidos/meta-tmedbg
 								else
 									echo "Error, unkown BUILDTYPE, exiting..."
 									exit 1
@@ -139,7 +141,11 @@ pipeline {
 
 								. trustme/build/yocto/init_ws_ids.sh out-${BUILDTYPE} ${GYROID_ARCH} ${GYROID_MACHINE}
 
-								cd ${WORKSPACE}/out-${BUILDTYPE}
+								if  [ "asan" = "${BUILDTYPE}" ];then
+									echo "Preparing workspace for build with ASAN, ${WORKSPACE}/out-${BUILDTYPE}"
+									bash  ${WORKSPACE}/meta-tmedbg/prepare_ws.sh  ${WORKSPACE}/out-${BUILDTYPE}
+								fi
+
 
 								echo "INHERIT += \\\"own-mirrors\\\"" >> conf/local.conf
 								echo "SOURCE_MIRROR_URL = \\\"file:///source_mirror\\\"" >> conf/local.conf
