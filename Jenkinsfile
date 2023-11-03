@@ -128,6 +128,7 @@ pipeline {
 									ENABLE_SCHSM="1"
 								elif [ "asan" = "${BUILDTYPE}" ];then
 									echo "Preparing Yocto workdir for dev mode build with sanitizers enabled"
+									ENABLE_SCHSM="1"
 									TRUSTME_SANITIZERS=y
 									git clone https://github.com/gyroidos/meta-tmedbg
 								else
@@ -180,6 +181,8 @@ pipeline {
 										stash includes: "out-ccmode/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-ccmode/test_certificates/**, trustme/build/**, trustme/cml/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-ccmode"
 									} else if("schsm" == env.BUILDTYPE) {
 										stash includes: "out-schsm/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-schsm/test_certificates/**, trustme/build/**, trustme/cml/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-schsm"
+									} else if("asan" == env.BUILDTYPE) {
+										stash includes: "out-asan/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-asan/test_certificates/**, trustme/build/**, trustme/cml/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-asan"
 									} else {
 										error "Unkown build type"
 									}
@@ -248,12 +251,12 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-						values 'dev', 'production', 'ccmode'
+						values 'asan'
 					}
 				}
 
 				stages {
-					stage('Integration Test') {
+					stage('Perform Test') {
 						agent {
 							dockerfile {
 								dir ".manifests"
@@ -277,6 +280,8 @@ pipeline {
 									unstash 'img-production'
 								} else if ("ccmode" == env.BUILDTYPE){
 									unstash 'img-ccmode'
+								} else if ("asan" == env.BUILDTYPE){
+									unstash 'img-asan'
 								} else {
 									error "Unkown build type"
 								}
@@ -287,7 +292,13 @@ pipeline {
 									echo "Running on host: ${NODE_NAME}"
 									echo "$PATH"
 
-									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode "${BUILDTYPE}" --skip-rootca --dir "${WORKSPACE}" --builddir "out-${BUILDTYPE}" --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "testvm" --ssh 2222 --kill --vnc 1 --log-dir "${WORKSPACE}/out-${BUILDTYPE}/cml_logs"'
+									export MODE=${BUILDTYPE}
+
+									if [ "asan" == "$MODE" ];then
+										MODE="dev"
+									fi
+
+									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode "${MODE}" --skip-rootca --dir "${WORKSPACE}" --builddir "out-${BUILDTYPE}" --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "testvm" --ssh 2222 --kill --vnc 1 --log-dir "${WORKSPACE}/out-${BUILDTYPE}/cml_logs"'
 								'''
 							}
 
@@ -313,33 +324,53 @@ pipeline {
 				}
 			}
 
-			agent {
-				node { label 'testing' }
-			}
-
-			steps {
-				sh label: 'Clean workspace', script: 'rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/meta-* ${WORKSPACE}/out-* ${WORKSPACE}/trustme/build ${WORKSPACE}/poky trustme/manifest'
-				unstash 'img-schsm'
-				lock ('schsm-test') {
-
-					catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-						sh label: 'Perform integration test with physical token', script: '''
-							echo "Running on node $(hostname)"
-							echo "$PATH"
-							echo "Physhsm: ${PHYSHSM}"
-
-
-							bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-schsm --pki "${WORKSPACE}/out-schsm/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --vnc 1 --kill --enable-schsm ${PHYSHSM} 12345678 --log-dir "${WORKSPACE}/out-schsm/cml_logs"'
-						'''
+			matrix {
+				axes {
+					axis {
+						name 'BUILDTYPE'
+						values 'asan'
 					}
+				}
 
-					echo "Archiving CML logs"
-					archiveArtifacts artifacts: 'out-**/cml_logs/**, cml_logs/**', fingerprint: true, allowEmptyArchive: true
+				stages {
+					stage ("Perform test") {
+						agent {
+							node { label 'testing' }
+						}
 
-					script {
-						if ('FAILURE' == currentBuild.result) {
-							echo "Stage failed, exiting..."
-							error('')
+						steps {
+							sh label: 'Clean workspace', script: 'rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/meta-* ${WORKSPACE}/out-* ${WORKSPACE}/trustme/build ${WORKSPACE}/poky trustme/manifest'
+							script {
+								if ("schsm" == env.BUILDTYPE) {
+										unstash 'img-schsm'
+								} else if ("asan" == env.BUILDTYPE){
+										unstash 'img-asan'
+								}
+							}
+
+							lock ('schsm-test') {
+
+								catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+									sh label: 'Perform integration test with physical token', script: '''
+										echo "Running on node $(hostname)"
+										echo "$PATH"
+										echo "Physhsm: ${PHYSHSM}"
+
+
+									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-${BUILDTYPE} --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --vnc 1 --kill --enable-schsm ${PHYSHSM} 12345678 --log-dir "${WORKSPACE}/out-${BUILDTYPE}/cml_logs"'
+						'''
+								}
+
+								echo "Archiving CML logs"
+								archiveArtifacts artifacts: 'out-${BUILDTYPE}/cml_logs/**, cml_logs/**', fingerprint: true, allowEmptyArchive: true
+
+								script {
+									if ('FAILURE' == currentBuild.result) {
+										echo "Stage failed, exiting..."
+										error('')
+									}
+								}
+							}
 						}
 					}
 				}
