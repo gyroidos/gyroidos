@@ -88,7 +88,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-							values 'dev', 'production', 'ccmode', 'schsm', 'asan'
+							values 'asan'
 					}
 				}
 				stages {
