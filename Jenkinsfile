@@ -88,7 +88,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-							values 'asan'
+							values 'dev', 'production', 'ccmode', 'schsm', 'asan'
 					}
 				}
 				stages {
@@ -251,7 +251,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-						values 'asan'
+						values 'dev', 'production', 'ccmode', 'asan'
 					}
 				}
 
@@ -328,7 +328,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-						values 'asan'
+						values 'schsm', 'asan'
 					}
 				}
 
