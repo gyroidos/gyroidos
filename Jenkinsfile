@@ -152,8 +152,7 @@ pipeline {
 
 								cat conf/local.conf
 
-
-								echo 'TRUSTME_DATAPART_EXTRA_SPACE="3000"' >> conf/local.conf
+								echo 'TRUSTME_DATAPART_EXTRA_SPACE="6144"' >> conf/local.conf
 
 								bitbake trustx-cml-initramfs multiconfig:container:trustx-core
 								bitbake trustx-cml
