@@ -42,15 +42,6 @@ RUN locale-gen en_US.UTF-8
 
 RUN apt-get update -y && apt-get install -y kmod procps curl
 
-# trusted-connector build dependencies
-# for new yarn based build of trusted-connector core compartment
-RUN curl -sL https://deb.nodesource.com/setup_11.x | bash - \
-	&& apt-get install -y nodejs
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb http://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
-	&& apt-get update -y \
-	&& apt-get install -y vim openjdk-11-jdk-headless openjdk-11-jre-headless yarn
-
 # optee python dependings
 RUN apt-get update -y && apt-get install -y python-crypto python3-crypto
 
