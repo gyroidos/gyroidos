@@ -34,7 +34,8 @@ RUN apt-get install -y \
 	check \
 	rsync \
 	lz4 \
-	zstd
+	zstd \
+	fdisk
 
 # CI
 RUN apt-get install -y \
