@@ -87,7 +87,7 @@ RUN locale-gen en_US.UTF-8
 # set image label
 ARG CML_BUILDER=jenkins
 
-LABEL "com.gyroidos.builder"="${lbl}"
+LABEL "com.gyroidos.builder"="${CML_BUILDER}"
 
 # Set workdir
 WORKDIR "/opt/ws-yocto/"
