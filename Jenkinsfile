@@ -328,7 +328,7 @@ pipeline {
 					}
 
 					echo "Archiving CML logs"
-					archiveArtifacts artifacts: 'out-schsm/cml_logs', fingerprint: true, allowEmptyArchive: true
+					archiveArtifacts artifacts: 'out-**/cml_logs/**, cml_logs/**', fingerprint: true, allowEmptyArchive: true
 
 					script {
 						if ('FAILURE' == currentBuild.result) {
