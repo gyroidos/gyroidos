@@ -5,7 +5,7 @@ RUN apt-get update -y && apt-get install -y \
 	apt-utils \
 	gawk \
 	wget \
-	git-core \
+	git \
 	diffstat \
 	unzip \
 	texinfo \
@@ -73,10 +73,14 @@ RUN apt-get update -y && apt-get install -y \
 # optee python dependings
 	python3-cryptography
 
+
+RUN apt-get -y install virtualenv
+
 # protobuf-c-text library
 # https://github.com/protobuf-c/protobuf-c-text
 RUN cd /opt && git clone https://github.com/gyroidos/external_protobuf-c-text.git && cd /opt/external_protobuf-c-text && ./autogen.sh
 RUN cd /opt/external_protobuf-c-text && ./configure && make && make install
+
 
 RUN dpkg-reconfigure locales
 RUN echo "LC_ALL=en_US.UTF-8" >> /etc/environment
