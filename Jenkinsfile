@@ -16,70 +16,167 @@ pipeline {
 	}
 
 	stages {
-		stage('Repo') {
-			steps {
-				sh label: 'Clean workspace and repo init', script: '''
-					#!/bin/bash
-					echo "Running on $(hostname)"
-					rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/*
-
-					env
-
-					cd ${WORKSPACE}/.manifests
-					git rev-parse --verify jenkins-ci && git branch -D jenkins-ci
-					git checkout -b "jenkins-ci"
-					cd ${WORKSPACE}
-
-					repo init --depth=1 -u ${WORKSPACE}/.manifests/.git -b "jenkins-ci" -m yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml
-
-					mkdir -p .repo/local_manifests
-
-					branches="${PR_BRANCHES}"
-
-					meta_repos="meta-trustx|meta-trustx-intel|meta-trustx-rpi|meta-trustx-nxp"
-					cml_repo="cml"
-					build_repo="gyroidos_build"
-					branch_regex="PR-([0-9]+)"
-					echo $branches | tr ',' '\n' | while read -r line; do
-						if [[ "$line" =~ ($meta_repos)=$branch_regex ]]; then
-							project="${BASH_REMATCH[1]}"
-							revision="refs/pull/${BASH_REMATCH[2]}/head"
-
-							echo "\
+		stage('Repo + CML') {
+			agent {
+				dockerfile {
+					dir '.manifests'
+					additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
+					args '--entrypoint=\'\' --env BUILDNODE="${env.NODE_NAME}"'
+					reuseNode true
+				}
+			}
+	
+			stages {
+				stage('Repo') {
+					steps {
+						sh label: 'Clean workspace and repo init', script: '''
+							#!/bin/bash
+							#echo "Running on $(hostname)"
+							echo "Running on host: ${NODE_NAME}"
+							rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/*
+		
+		
+							env
+		
+							cat .manifests/Dockerfile
+		
+							cd ${WORKSPACE}/.manifests
+							git rev-parse --verify jenkins-ci && git branch -D jenkins-ci
+							git checkout -b "jenkins-ci"
+							cd ${WORKSPACE}
+		
+							repo init --depth=1 -u ${WORKSPACE}/.manifests/.git -b "jenkins-ci" -m yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml
+		
+							mkdir -p .repo/local_manifests
+		
+							branches="${PR_BRANCHES}"
+		
+							meta_repos="meta-trustx|meta-trustx-intel|meta-trustx-rpi|meta-trustx-nxp"
+							cml_repo="cml"
+							build_repo="gyroidos_build"
+							branch_regex="PR-([0-9]+)"
+							echo $branches | tr ',' '\n' | while read -r line; do
+								if [[ "$line" =~ ($meta_repos)=$branch_regex ]]; then
+									project="${BASH_REMATCH[1]}"
+									revision="refs/pull/${BASH_REMATCH[2]}/head"
+		
+									echo "\
 <?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\n\
 <manifest>\n\
 <remove-project name=\\\"$project\\\" />\n\
 <project path=\\\"$project\\\" name=\\\"$project\\\" remote=\\\"gyroidos\\\" revision=\\\"$revision\\\" />\n\
 </manifest>" >> .repo/local_manifests/$project.xml
-						elif [[ "$line" =~ ($cml_repo)=$branch_regex ]]; then
-							project="${BASH_REMATCH[1]}"
-							revision="refs/pull/${BASH_REMATCH[2]}/head"
-
-							echo "\
+								elif [[ "$line" =~ ($cml_repo)=$branch_regex ]]; then
+									project="${BASH_REMATCH[1]}"
+									revision="refs/pull/${BASH_REMATCH[2]}/head"
+		
+									echo "\
 <?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\n\
 <manifest>\n\
 <remove-project name=\\\"$project\\\" />\n\
 <project path=\\\"trustme/cml\\\" name=\\\"$project\\\" remote=\\\"gyroidos\\\" revision=\\\"$revision\\\" />\n\
 </manifest>" >> .repo/local_manifests/$project.xml
-						elif [[ "$line" =~ ($build_repo)=$branch_regex ]]; then
-							project="${BASH_REMATCH[1]}"
-							revision="refs/pull/${BASH_REMATCH[2]}/head"
-
-							echo "\
+								elif [[ "$line" =~ ($build_repo)=$branch_regex ]]; then
+									project="${BASH_REMATCH[1]}"
+									revision="refs/pull/${BASH_REMATCH[2]}/head"
+		
+									echo "\
 <?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\n\
 <manifest>\n\
 <remove-project name=\\\"$project\\\" />\n\
 <project path=\\\"trustme/build\\\" name=\\\"$project\\\" remote=\\\"gyroidos\\\" revision=\\\"$revision\\\" />\n\
 </manifest>" >> .repo/local_manifests/$project.xml
-						fi
-					done
+								else
+									echo "ERROR: failed to parse revision for line $line"
+									return false
+								fi
+							done
 
-					repo sync -j8 --current-branch --fail-fast
-				'''
+							repo sync -j8 --current-branch --fail-fast
+						'''
 
-				stash includes: "meta-*/**, poky/**, trustme/**", name: 'ws-yocto', useDefaultExcludes: false, allowEmpty: false
-				stash includes: ".manifests/**", name: 'manifests', useDefaultExcludes: false, allowEmpty: false
+
+						stash includes: "meta-*/**, poky/**, trustme/**", name: 'ws-yocto', useDefaultExcludes: false, allowEmpty: false
+						stash includes: ".manifests/**", name: 'manifests', useDefaultExcludes: false, allowEmpty: false
+					}
+				}
+
+				stage('Code Format & Style') {
+					when {
+						expression {
+							if (! fileExists("trustme/cml")) {
+								echo "CML sources not available, skipping initial tests"
+								return false
+							} else {
+								echo "CML sources available, performing initial tests"
+								return true
+							}
+						}
+					}
+	
+					steps {
+						sh label: 'Clean CML Repo', script: '''
+						echo "Running on $BUILDNODE"
+						echo "Running on host: ${NODE_NAME}"
+
+						ls -al ${WORKSPACE}/
+						ls -al ${WORKSPACE}/trustme/
+						ls -al ${WORKSPACE}/trustme/cml
+						git -C ${WORKSPACE}/trustme/cml clean -fx
+						ls -al .
+						'''
+
+					sh label: 'Check code formatting', script: 'meta-trustx/scripts/ci/check-if-code-is-formatted.sh'
+					}
+				}
+
+				/*
+				 Intentionally mark the static code analysis stage as skipped
+				 We want to show that we are performing static code analysis, but not
+				 as part of Jenkins's pipeline.
+				*/
+				stage('Static Code Analysis') {
+					when {
+						expression {
+							return false
+						}
+					}
+
+					steps {
+						sh label: 'Perform static code analysis', script: '''
+							echo "Static Code Analysis is performed using Semmle."
+							echo "Please check GitHub's project for results from Semmle's analysis."
+						'''
+					}
+				}
+
+				stage('Unit Testing') {
+					when {
+						expression {
+							if (! fileExists("trustme/cml")) {
+								echo "CML sources not available, skipping initial tests"
+								return false
+							} else {
+								echo "CML sources available, performing initial tests"
+								return true
+							}
+						}
+					}
+	
+					steps {
+						sh label: 'Clean CML Repo', script: '''
+						echo "Running on $BUILDNODE"
+						echo "Running on host: ${NODE_NAME}"
+						git -C ${WORKSPACE}/trustme/cml clean -fx
+
+						find /usr/
+					'''
+					sh label: 'Perform unit tests', script: 'meta-trustx/scripts/ci/unit-testing.sh'
+					}
+				}
+				
 			}
+
 		}
 
 		stage('Build + Test Images') {
@@ -276,12 +373,14 @@ pipeline {
 								}
 							}
 
+							unstash 'ws-yocto'
+
 							catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 								sh label: 'Perform integration tests', script: '''
 									echo "Running on host: ${NODE_NAME}"
 									echo "$PATH"
 
-									bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode "${BUILDTYPE}" --skip-rootca --dir "${WORKSPACE}" --builddir "out-${BUILDTYPE}" --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "testvm" --ssh 2222 --kill --vnc 1 --log-dir "${WORKSPACE}/out-${BUILDTYPE}/cml_logs"'
+									bash -c '${WORKSPACE}/meta-trustx/scripts/ci/VM-container-tests.sh --mode "${BUILDTYPE}" --skip-rootca --dir "${WORKSPACE}" --builddir "out-${BUILDTYPE}" --pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates" --name "testvm" --ssh 2222 --kill --vnc 1 --log-dir "${WORKSPACE}/out-${BUILDTYPE}/cml_logs"'
 								'''
 							}
 
@@ -314,6 +413,8 @@ pipeline {
 			steps {
 				sh label: 'Clean workspace', script: 'rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/meta-* ${WORKSPACE}/out-* ${WORKSPACE}/trustme/build ${WORKSPACE}/poky trustme/manifest'
 				unstash 'img-schsm'
+				unstash 'ws-yocto'
+
 				lock ('schsm-test') {
 
 					catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
@@ -323,7 +424,7 @@ pipeline {
 							echo "Physhsm: ${PHYSHSM}"
 
 
-							bash -c '${WORKSPACE}/trustme/cml/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-schsm --pki "${WORKSPACE}/out-schsm/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --vnc 1 --kill --enable-schsm ${PHYSHSM} 12345678 --log-dir "${WORKSPACE}/out-schsm/cml_logs"'
+							bash -c '${WORKSPACE}/meta-trustx/scripts/ci/VM-container-tests.sh --mode dev --dir ${WORKSPACE} --builddir out-schsm --pki "${WORKSPACE}/out-schsm/test_certificates" --name "${BRANCH_NAME}sc" --ssh 2231 --vnc 1 --kill --enable-schsm ${PHYSHSM} 12345678 --log-dir "${WORKSPACE}/out-schsm/cml_logs"'
 						'''
 					}
 

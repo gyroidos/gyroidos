@@ -1,5 +1,7 @@
 FROM debian:bookworm
 
+RUN sed -i 's/Components: main/Components: main contrib/' /etc/apt/sources.list.d/debian.sources
+
 # Essentials
 RUN apt-get update -y && apt-get install -y \
 	apt-utils \
@@ -39,6 +41,13 @@ RUN apt-get update -y && apt-get install -y \
 	curl \
 	kmod \
 	procps \
+# repotool
+	repo \
+# CML dependencies
+	libprotobuf-c1 \
+	libprotobuf-c-dev \
+	protobuf-compiler \
+	protobuf-c-compiler \
 # CI
 	libssl-dev \
 	libcap-dev \
@@ -73,10 +82,14 @@ RUN apt-get update -y && apt-get install -y \
 # optee python dependings
 	python3-cryptography
 
+
+
 # protobuf-c-text library
-# https://github.com/protobuf-c/protobuf-c-text
-RUN cd /opt && git clone https://github.com/gyroidos/external_protobuf-c-text.git && cd /opt/external_protobuf-c-text && ./autogen.sh
-RUN cd /opt/external_protobuf-c-text && ./configure && make && make install
+ADD https://github.com/gyroidos/external_protobuf-c-text/archive/refs/heads/master.zip /opt/external_protobuf-c-text-master.zip
+
+RUN cd /opt && unzip external_protobuf-c-text-master.zip
+
+RUN cd /opt/external_protobuf-c-text-master && ./autogen.sh && ./configure && make && make install
 
 RUN dpkg-reconfigure locales
 RUN echo "LC_ALL=en_US.UTF-8" >> /etc/environment
