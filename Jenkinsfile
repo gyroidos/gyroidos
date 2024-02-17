@@ -87,8 +87,7 @@ pipeline {
 <project path=\\\"trustme/build\\\" name=\\\"$project\\\" remote=\\\"gyroidos\\\" revision=\\\"$revision\\\" />\n\
 </manifest>" >> .repo/local_manifests/$project.xml
 								else
-									echo "ERROR: failed to parse revision for line $line"
-									return false
+									echo "Could not parse revision for line $line"
 								fi
 							done
 
