@@ -252,7 +252,7 @@ pipeline {
 							dockerfile {
 								dir ".manifests"
 								additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-								args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222 --env BUILDNODE="${env.NODE_NAME}"'
+								args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222 -p 5901 --env BUILDNODE="${env.NODE_NAME}"'
 								label 'worker'
 							}
 						}
