@@ -263,13 +263,13 @@ pipeline {
 							success {
 								script {
 									if ("dev" == env.BUILDTYPE) {
-										stash includes: "out-dev/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-dev/test_certificates/**, trustme/build/**, trustme/cml/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-dev"
+										stash includes: "out-dev/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-dev/test_certificates/**, trustme/build/**, meta-trustx/scripts/ci/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-dev"
 									} else if ("production" == env.BUILDTYPE){
-										stash includes: "out-production/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-production/test_certificates/**, trustme/build/**, trustme/cml/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-production"
+										stash includes: "out-production/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-production/test_certificates/**, trustme/build/**, meta-trustx/scripts/ci/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-production"
 									} else if("ccmode" == env.BUILDTYPE) {
-										stash includes: "out-ccmode/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-ccmode/test_certificates/**, trustme/build/**, trustme/cml/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-ccmode"
+										stash includes: "out-ccmode/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-ccmode/test_certificates/**, trustme/build/**, meta-trustx/scripts/ci/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-ccmode"
 									} else if("schsm" == env.BUILDTYPE) {
-										stash includes: "out-schsm/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-schsm/test_certificates/**, trustme/build/**, trustme/cml/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-schsm"
+										stash includes: "out-schsm/tmp/deploy/images/**/trustme_image/trustmeimage.img, out-schsm/test_certificates/**, trustme/build/**, meta-trustx/scripts/ci/**", excludes: "**/oe-logs/**, **/oe-workdir/**", name: "img-schsm"
 									} else {
 										error "Unkown build type"
 									}
@@ -372,8 +372,6 @@ pipeline {
 								}
 							}
 
-							unstash 'ws-yocto'
-
 							catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
 								sh label: 'Perform integration tests', script: '''
 									echo "Running on host: ${NODE_NAME}"
@@ -412,7 +410,6 @@ pipeline {
 			steps {
 				sh label: 'Clean workspace', script: 'rm -fr ${WORKSPACE}/.repo ${WORKSPACE}/meta-* ${WORKSPACE}/out-* ${WORKSPACE}/trustme/build ${WORKSPACE}/poky trustme/manifest'
 				unstash 'img-schsm'
-				unstash 'ws-yocto'
 
 				lock ('schsm-test') {
 
