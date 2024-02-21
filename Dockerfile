@@ -48,6 +48,7 @@ RUN apt-get update -y && apt-get install -y \
 	libprotobuf-c-dev \
 	protobuf-compiler \
 	protobuf-c-compiler \
+	libcap-dev \
 # CI
 	libssl-dev \
 	libcap-dev \
