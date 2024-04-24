@@ -11,9 +11,6 @@ pipeline {
 		YOCTO_VERSION = 'kirkstone'
 		BUILDUSER = "${sh(script:'id -u', returnStdout: true).trim()}"
 		KVM_GID = "${sh(script:'getent group kvm | cut -d: -f3', returnStdout: true).trim()}"
-		GYROID_ARCH = 'x86'
-		GYROID_MACHINE = 'genericx86-64'
-		PR_BRANCHES = ""
 	}
 
 	parameters {
@@ -43,7 +40,7 @@ pipeline {
 					steps {
 						echo "Running on node $NODE_NAME"
 
-						stepInitWs(manifest: "testmanifest.xml", workspace: "${WORKSPACE}", manifest_path: "${WORKSPACE}/.manifests", manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml", gyroid_arch: "x86", gyroid_machine: "genericx86-64", selector: buildParameter('BUILDSELECTOR'), rebuild_previous: "${REBUILD_PREVIOUS}", buildtype: "dev")
+						stepInitWs(manifest: "testmanifest.xml", workspace: "${WORKSPACE}", manifest_path: "${WORKSPACE}/.manifests", manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml", gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, selector: buildParameter('BUILDSELECTOR'), rebuild_previous: "${REBUILD_PREVIOUS}", buildtype: "dev")
 					}
 				}
 
