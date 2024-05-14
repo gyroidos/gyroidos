@@ -40,23 +40,22 @@ pipeline {
 					steps {
 						echo "Running on node $NODE_NAME"
 
-						stepInitWs(manifest: "testmanifest.xml", workspace: "${WORKSPACE}", manifest_path: "${WORKSPACE}/.manifests", manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml", gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, selector: buildParameter('BUILDSELECTOR'), rebuild_previous: "${REBUILD_PREVIOUS}", buildtype: "dev", pr_branches: PR_BRANCHES)
+						stepInitWs(workspace: "${WORKSPACE}", manifest_path: "${WORKSPACE}/.manifests", manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml", gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, selector: buildParameter('BUILDSELECTOR'), rebuild_previous: "${REBUILD_PREVIOUS}", buildtype: "dev", pr_branches: PR_BRANCHES)
 					}
 				}
 
 				stage ('Source Tests') {
-					when { expression { return false }}
-		//			when {
-		//				expression {
-		//					if (! fileExists("trustme/cml")) {
-		//						echo "CML sources not available, skipping initial tests"
-		//						return false
-		//					} else {
-		//						echo "CML sources available, performing initial tests"
-		//						return true
-		//					}
-		//				}
-		//			}
+					when {
+						expression {
+							if (! fileExists("trustme/cml")) {
+								echo "CML sources not available, skipping initial tests"
+								return false
+							} else {
+								echo "CML sources available, performing initial tests"
+								return true
+							}
+						}
+					}
 
 					parallel {
 							stage ('Code Format & Style') {
