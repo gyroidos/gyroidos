@@ -33,7 +33,7 @@ pipeline {
 					dockerfile {
 						dir '.'
 						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-						args '--entrypoint=\'\' --env NODE_NAME="${NODE_NAME}" -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sources:/source_mirror -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sstate-cache:/sstate_mirror'
+						args '--entrypoint=\'\' --env NODE_NAME="${NODE_NAME}"'
 						reuseNode true
 					}
 			}
@@ -115,7 +115,7 @@ pipeline {
 					dockerfile {
 						dir "."
 						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-						args '--entrypoint=\'\' -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sources:/source_mirror -v /yocto_mirror/${YOCTO_VERSION}/${GYROID_ARCH}/sstate-cache:/sstate_mirror --env NODE_NAME="${NODE_NAME}" -v /home/jenkins-ssh/.ssh/known_hosts:/home/builder/.ssh/known_hosts'
+						args '--entrypoint=\'\' -v /yocto_mirror/:/yocto_mirror --env NODE_NAME="${NODE_NAME}" -v /home/jenkins-ssh/.ssh/known_hosts:/home/builder/.ssh/known_hosts'
 						reuseNode false
 					}
 				}
@@ -127,9 +127,6 @@ pipeline {
 							script {
 								if ("y" == "${SYNC_MIRRORS}") {
 									sshagent(credentials: ['MIRROR_ACCESS']){
-										sh "ssh jenkins-ssh@${env.MIRRORHOST} \"ls -al /yocto_mirror\""
-
-
 										stepBuildImage(workspace: WORKSPACE, manifest_path: "${WORKSPACE}/.manifests", manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml", yocto_version: YOCTO_VERSION, gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, buildtype: BUILDTYPE, selector: buildParameter('BUILDSELECTOR'), build_installer: BUILD_INSTALLER, sync_mirrors: SYNC_MIRRORS, rebuild_previous: REBUILD_PREVIOUS)
 									}
 								} else {
@@ -158,7 +155,7 @@ pipeline {
 					dockerfile {
 						dir "."
 						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-						args '--entrypoint=\'\' -v /yocto_mirror:/yocto_mirror --device=/dev/kvm --group-add=$KVM_GID -p 2222 -p 5901 --env NODE_NAME="${NODE_NAME}"'
+						args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222 -p 5901 --env NODE_NAME="${NODE_NAME}"'
 						label 'worker'
 					}
 				}
