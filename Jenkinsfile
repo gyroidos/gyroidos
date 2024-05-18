@@ -1,6 +1,3 @@
-library identifier: "gyroidos_ci_common@${CI_LIB_VERSION}", retriever: modernSCM(
-    					[$class: 'GitSCMSource', remote: "https://github.com/gyroidos/gyroidos_ci_common"])
-
 pipeline {
 	agent any
 
@@ -42,6 +39,11 @@ pipeline {
 				stage ('Prepare workspace') {
 					steps {
 						echo "Running on node $NODE_NAME"
+
+						library identifier: "gyroidos_ci_common@${CI_LIB_VERSION}", retriever: modernSCM(
+    						[$class: 'GitSCMSource', remote: "https://github.com/gyroidos/gyroidos_ci_common"])
+
+
 
 						stepInitWs(workspace: "${WORKSPACE}", manifest_path: "${WORKSPACE}/.manifests", manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml", gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, selector: buildParameter('BUILDSELECTOR'), rebuild_previous: "${REBUILD_PREVIOUS}", buildtype: "dev", pr_branches: PR_BRANCHES)
 					}
