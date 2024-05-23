@@ -178,7 +178,9 @@ pipeline {
 			}
 
 			steps {
-				stepIntegrationTest(workspace: "${WORKSPACE}", gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, buildtype: "schsm", selector: buildParameter('BUILDSELECTOR'), stage_name: STAGE_NAME, schsm_serial: "${env.PHYSHSM}", schsm_pin: "12345678")
+				lock('schsm-test') {
+					stepIntegrationTest(workspace: "${WORKSPACE}", gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, buildtype: "schsm", selector: buildParameter('BUILDSELECTOR'), stage_name: STAGE_NAME, schsm_serial: "${env.PHYSHSM}", schsm_pin: "12345678")
+				}
 			}
 		} // stage 'Token Tests'
 
