@@ -154,12 +154,13 @@ pipeline {
 				}
 
 				agent {
-					dockerfile {
-						dir "."
-						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-						args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222 -p 5901 --env NODE_NAME="${NODE_NAME}"'
-						label 'worker'
-					}
+					//dockerfile {
+						//dir "."
+						//additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
+						//args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222 -p 5901 --env NODE_NAME="${NODE_NAME}"'
+						//label 'worker'
+					//}
+					node { label 'tqma8mpxl' }
 				}
 
 				stages {
