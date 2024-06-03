@@ -110,7 +110,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-						values 'dev', 'production', 'ccmode', 'schsm'
+						values 'dev', 'production', 'ccmode', 'schsm', 'asan'
 					}
 				}
 
@@ -150,7 +150,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-						values 'dev', 'production', 'ccmode'
+						values 'dev', 'production', 'ccmode', 'asan'
 					}
 				}
 
