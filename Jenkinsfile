@@ -2,6 +2,7 @@ pipeline {
 	agent any
 
 	options {
+		checkoutToSubdirectory('.manifests')
 		copyArtifactPermission('/GyroidOS_Pipelines/**');
 	}
 
