@@ -29,7 +29,7 @@ pipeline {
 		stage('Source checks + unit tests') {
 			agent {
 					dockerfile {
-						dir '.'
+						dir '.manifests'
 						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
 						args '--entrypoint=\'\' --env NODE_NAME="${NODE_NAME}"'
 						reuseNode true
@@ -116,7 +116,7 @@ pipeline {
 
 				agent {
 					dockerfile {
-						dir "."
+						dir ".manifests"
 						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
 						args '--entrypoint=\'\' -v /yocto_mirror/:/yocto_mirror --env NODE_NAME="${NODE_NAME}" -v /home/jenkins-ssh/.ssh/known_hosts:/home/builder/.ssh/known_hosts'
 						reuseNode false
@@ -156,7 +156,7 @@ pipeline {
 
 				agent {
 					dockerfile {
-						dir "."
+						dir ".manifests"
 						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
 						args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222 -p 5901 --env NODE_NAME="${NODE_NAME}"'
 						label 'worker'
