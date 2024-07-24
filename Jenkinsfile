@@ -21,8 +21,8 @@ pipeline {
 		choice(name: 'REBUILD_PREVIOUS', choices: ['n', 'y'], description: 'Rebuild selected, previous build instead of just reusing image from artifacts')
 		buildSelector defaultSelector: specific('${BUILD_NUMBER}'), name: 'BUILDSELECTOR', description: 'Image to perform integration tests on. Changing the default value skips the image build.'
 		choice(name: 'SYNC_MIRRORS', choices: ['n', 'y'], description: 'Sync source mirrors after successful build')
+		booleanParam(name: 'SKIP_WS_CLEANUP', defaultValue: false, description: 'If true, workspace cleanup after build will be skipped')
 	}
-
 
 
 	stages {
@@ -44,9 +44,15 @@ pipeline {
 						library identifier: "gyroidos_ci_common@${CI_LIB_VERSION}", retriever: modernSCM(
     						[$class: 'GitSCMSource', remote: "https://github.com/gyroidos/gyroidos_ci_common"])
 
-
-
-						stepInitWs(workspace: "${WORKSPACE}", manifest_path: "${WORKSPACE}/.manifests", manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml", gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, selector: buildParameter('BUILDSELECTOR'), rebuild_previous: "${REBUILD_PREVIOUS}", buildtype: "dev", pr_branches: PR_BRANCHES)
+						stepInitWs(workspace: "${WORKSPACE}",
+									manifest_path: "${WORKSPACE}/.manifests",
+									manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
+									gyroid_arch: GYROID_ARCH,
+									gyroid_machine: GYROID_MACHINE,
+									selector: buildParameter('BUILDSELECTOR'),
+									rebuild_previous: "${REBUILD_PREVIOUS}",
+									buildtype: "dev",
+									pr_branches: PR_BRANCHES)
 					}
 				}
 
@@ -67,7 +73,8 @@ pipeline {
 							stage ('Code Format & Style') {
 								steps {
 									echo "Entering format test stage, workspace: ${WORKSPACE}"
-									stepFormatCheck(workspace: WORKSPACE, sourcedir: "${WORKSPACE}/trustme/cml")
+									stepFormatCheck(workspace: WORKSPACE,
+									sourcedir: "${WORKSPACE}/trustme/cml")
 								}
 							}
 
@@ -91,11 +98,10 @@ pipeline {
 								steps {
 									script {
 										echo "Running on node $NODE_NAME"
-										stepUnitTests(workspace: WORKSPACE, sourcedir: "${WORKSPACE}/trustme/cml")
+										stepUnitTests(workspace: WORKSPACE,
+													  sourcedir: "${WORKSPACE}/trustme/cml")
 									}
 								}
-
-
 							}
 						}
 					}
@@ -118,24 +124,56 @@ pipeline {
 					dockerfile {
 						dir ".manifests"
 						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-						args '--entrypoint=\'\' -v /yocto_mirror/:/yocto_mirror --env NODE_NAME="${NODE_NAME}" -v /home/jenkins-ssh/.ssh/known_hosts:/home/builder/.ssh/known_hosts'
+						args '''--entrypoint=\'\' -v /yocto_mirror/:/yocto_mirror --env NODE_NAME="${NODE_NAME}"
+							  -v /home/${NODE_JENKINS_USER}/.ssh/known_hosts:/home/builder/.ssh/ci_known_hosts'''
 						reuseNode false
 					}
 				}
 
 				stages {
 					stage ('Build image') {
-						//when { expression { return false }}
 						steps {
 							script {
-								if ("y" == "${SYNC_MIRRORS}") {
+								if ("y" == SYNC_MIRRORS) {
+								    sh label: 'Prepare .ssh/config', script: '''
+									echo "Preparing .ssh/config for mirror sync"
+
+								    cat > /home/builder/.ssh/config << EOF 
+UserKnownHostsFile /home/builder/.ssh/ci_known_hosts
+EOF
+									'''
+
 									sshagent(credentials: ['MIRROR_ACCESS']){
-										stepBuildImage(workspace: WORKSPACE, manifest_path: "${WORKSPACE}/.manifests", manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml", yocto_version: YOCTO_VERSION, gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, buildtype: BUILDTYPE, selector: buildParameter('BUILDSELECTOR'), build_installer: BUILD_INSTALLER, sync_mirrors: SYNC_MIRRORS, rebuild_previous: REBUILD_PREVIOUS)
+										stepBuildImage(workspace: WORKSPACE,
+											manifest_path: "${WORKSPACE}/.manifests",
+											manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
+											mirror_base_path: "/yocto_mirror",
+											yocto_version: YOCTO_VERSION,
+											gyroid_arch: GYROID_ARCH,
+											gyroid_machine: GYROID_MACHINE,
+											buildtype: BUILDTYPE,
+											build_coreos: true,
+											selector: buildParameter('BUILDSELECTOR'),
+											build_installer: BUILD_INSTALLER,
+											sync_mirrors: SYNC_MIRRORS,
+											rebuild_previous: REBUILD_PREVIOUS)
 									}
 								} else {
 									echo "wont sync mirrors"
 
-									stepBuildImage(workspace: WORKSPACE, manifest_path: "${WORKSPACE}/.manifests", manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml", yocto_version: YOCTO_VERSION, gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, buildtype: BUILDTYPE, selector: buildParameter('BUILDSELECTOR'), build_installer: BUILD_INSTALLER, sync_mirrors: SYNC_MIRRORS, rebuild_previous: REBUILD_PREVIOUS)
+									stepBuildImage(workspace: WORKSPACE,
+													manifest_path: "${WORKSPACE}/.manifests",
+													manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
+													mirror_base_path: "/yocto_mirror",
+													yocto_version: YOCTO_VERSION,
+													gyroid_arch: GYROID_ARCH,
+													gyroid_machine: GYROID_MACHINE,
+													buildtype: BUILDTYPE,
+													build_coreos: true,
+													selector: buildParameter('BUILDSELECTOR'),
+													build_installer: BUILD_INSTALLER,
+													sync_mirrors: SYNC_MIRRORS,
+													rebuild_previous: REBUILD_PREVIOUS)
 								}
 							}
 						}
@@ -166,7 +204,16 @@ pipeline {
 				stages {
 					stage ('Perform tests') {
 						steps {
-							stepIntegrationTest(workspace: "${WORKSPACE}", gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, buildtype: "${BUILDTYPE}", selector: buildParameter('BUILDSELECTOR'), stage_name: STAGE_NAME, schsm_serial: "", schsm_pin: "")
+							stepIntegrationTest(workspace: "${WORKSPACE}",
+								manifest_path: "${WORKSPACE}/.manifests",
+								source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
+								gyroid_machine: GYROID_MACHINE,
+								buildtype: "${BUILDTYPE}",
+								test_mode: "${"asan" == BUILDTYPE ? "dev" : BUILDTYPE}",
+								selector: buildParameter('BUILDSELECTOR'),
+								stage_name: STAGE_NAME,
+								schsm_serial: "",
+								schsm_pin: "")
 						}
 					} // stage 'Perform tests'
 				} // stages
@@ -180,7 +227,16 @@ pipeline {
 
 			steps {
 				lock('schsm-test') {
-					stepIntegrationTest(workspace: "${WORKSPACE}", gyroid_arch: GYROID_ARCH, gyroid_machine: GYROID_MACHINE, buildtype: "schsm", selector: buildParameter('BUILDSELECTOR'), stage_name: STAGE_NAME, schsm_serial: "${env.PHYSHSM}", schsm_pin: "12345678")
+					stepIntegrationTest(workspace: "${WORKSPACE}",
+						manifest_path: "${WORKSPACE}/.manifests",
+						source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
+						gyroid_machine: GYROID_MACHINE,
+						buildtype: "schsm",
+						test_mode: "ccmode",
+						selector: buildParameter('BUILDSELECTOR'),
+						stage_name: STAGE_NAME,
+						schsm_serial: "${env.PHYSHSM}",
+						schsm_pin: "${env.PHYSHSM_PIN}")
 				}
 			}
 		} // stage 'Token Tests'
@@ -234,4 +290,18 @@ pipeline {
 			}
 		} // stage 'Documentation Generation'
 	} // stages
+
+    post {
+        always {
+			script {
+				if (params.SKIP_WS_CLEANUP) {
+					echo "Skipping workspace cleanup as requested"
+	    	        cleanWs cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenUnstable: true, notFailBuild: true
+				} else {
+					echo "Cleaning workspace"
+	    	        cleanWs cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenUnstable: true, notFailBuild: true
+				}
+			}
+        }
+    }   
 } // pipeline

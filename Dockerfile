@@ -108,7 +108,15 @@ WORKDIR "/opt/ws-yocto/"
 
 ARG BUILDUSER
 
-RUN if ! [ -z "${BUILDUSER}" ];then echo "Preparing container home directory for user ${BUILDUSER}" && adduser builder --disabled-password --uid "${BUILDUSER}" --gecos ""; else echo "Docker build argument BUILDUSER not supplied, leaving unconfigured...";fi
+RUN if ! [ -z "${BUILDUSER}" ];then \
+	echo "Preparing container home directory for user ${BUILDUSER}" && \
+	adduser builder --disabled-password --uid "${BUILDUSER}" --gecos "" && \
+	mkdir /home/builder/.ssh && \
+	chown builder:builder /home/builder/.ssh && \
+	chmod 700 /home/builder/.ssh; \
+else \
+	echo "Docker build argument BUILDUSER not supplied, leaving unconfigured..."; \
+fi
 
 #COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
 
