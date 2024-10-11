@@ -83,7 +83,11 @@ RUN apt-get update -y && apt-get install -y \
 # optee python dependings
 	python3-cryptography
 
-
+# Backport openssl 3.3 from debian trixie to make unit tests with openssl provider API work
+RUN echo "deb http://deb.debian.org/debian trixie main" > /etc/apt/sources.list.d/trixie.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    -t trixie openssl
 
 # protobuf-c-text library
 ADD https://github.com/gyroidos/external_protobuf-c-text/archive/refs/heads/master.zip /opt/external_protobuf-c-text-master.zip
