@@ -13,7 +13,7 @@ pipeline {
 	}
 
 	parameters {
-		string(name: 'CI_LIB_VERSION', defaultValue: 'main', description: 'Bersion of the gyroidos_ci_common library to be used')
+		string(name: 'CI_LIB_VERSION', defaultValue: 'main', description: 'Version of the gyroidos_ci_common library to be used (e.g. main or pull/<pr_num>/merge)')
 		choice(name: 'GYROID_ARCH', choices: ['x86', 'arm32', 'arm64'], description: 'GyroidOS Target Architecture')
 		choice(name: 'GYROID_MACHINE', choices: ['genericx86-64', 'apalis-imx8', 'raspberrypi3-64', 'raspberrypi2', 'tqma8mpxl'], description: 'GyroidOS Target Machine (Must be compatible with GYROID_ARCH!)')
 		string(name: 'PR_BRANCHES', defaultValue: '', description: 'Comma separated list of pull request branches (e.g. meta-trustx=PR-177,meta-trustx-nxp=PR-13,gyroidos_build=PR-97)')
