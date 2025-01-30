@@ -3,6 +3,7 @@
 
   <!--     REMOTES     -->
   <remote name="gyroidos"
+    revision="main"
     fetch="https://github.com/gyroidos/"/>
 
   <remote  name="yocto"
@@ -19,20 +20,16 @@
            remote="yocto"
            sync-j="4" />
 
-  <project path="poky" name="poky" />
-
-  <!-- MANIFEST Repo -->
-  <project path="trustme/manifest" name="gyroidos" remote="gyroidos" />
-  <project path="trustme/build" name="gyroidos_build" remote="gyroidos">
+  <!-- GYROIDOS -->
+  <project path="gyroidos/manifest" name="gyroidos" remote="gyroidos" />
+  <project path="gyroidos/build" name="gyroidos_build" remote="gyroidos">
      <linkfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
   </project>
-  <project path="trustme/cml" name="cml" remote="gyroidos" />
-
-  <!-- TRUSTME -->
+  <project path="gyroidos/cml" name="cml" remote="gyroidos" />
   <project path="meta-trustx" name="meta-trustx" remote="gyroidos" />
 
-  <!-- UTILITIES/FEATURES -->
+  <!-- YOCTO UTILITIES/FEATURES -->
+  <project path="poky" name="poky" />
   <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
   <project path="meta-virtualization" name="meta-virtualization" />
-  <project path="meta-java" name="meta-java" />
 </manifest>

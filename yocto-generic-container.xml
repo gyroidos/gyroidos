@@ -5,7 +5,7 @@
 
   <!-- TARGET SPECIFICS -->
   <remove-project name="gyroidos_build" />
-  <project path="trustme/build" name="gyroidos_build" remote="gyroidos">
+  <project path="gyroidos/build" name="gyroidos_build" remote="gyroidos">
 	  <linkfile src="yocto/init_ws_container.sh" dest="init_ws.sh" />
   </project>
 </manifest>

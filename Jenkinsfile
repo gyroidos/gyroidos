@@ -59,7 +59,7 @@ pipeline {
 				stage ('Source Tests') {
 					when {
 						expression {
-							if (! fileExists("trustme/cml")) {
+							if (! fileExists("gyroidos/cml")) {
 								echo "CML sources not available, skipping initial tests"
 								return false
 							} else {
@@ -74,7 +74,7 @@ pipeline {
 								steps {
 									echo "Entering format test stage, workspace: ${WORKSPACE}"
 									stepFormatCheck(workspace: WORKSPACE,
-									sourcedir: "${WORKSPACE}/trustme/cml")
+									sourcedir: "${WORKSPACE}/gyroidos/cml")
 								}
 							}
 
@@ -99,7 +99,7 @@ pipeline {
 									script {
 										echo "Running on node $NODE_NAME"
 										stepUnitTests(workspace: WORKSPACE,
-													  sourcedir: "${WORKSPACE}/trustme/cml")
+													  sourcedir: "${WORKSPACE}/gyroidos/cml")
 									}
 								}
 							}
