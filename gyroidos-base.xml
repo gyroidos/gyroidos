@@ -27,6 +27,7 @@
   </project>
   <project path="gyroidos/cml" name="cml" remote="gyroidos" />
   <project path="meta-trustx" name="meta-trustx" remote="gyroidos" />
+  <project path="meta-tmedbg" name="meta-tmedbg" remote="gyroidos" />
 
   <!-- YOCTO UTILITIES/FEATURES -->
   <project path="poky" name="poky" />
