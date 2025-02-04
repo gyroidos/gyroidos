@@ -4,6 +4,6 @@
   <include name="gyroidos-base.xml" />
 
   <!-- TARGET SPECIFICS -->
-  <project path="meta-trustx-rpi" name="meta-trustx-rpi" remote="gyroidos" />
+  <project path="meta-gyroidos-rpi" name="meta-gyroidos-rpi" remote="gyroidos" />
   <project path="meta-raspberrypi" name="meta-raspberrypi" />
 </manifest>

@@ -11,7 +11,7 @@
     fetch="https://github.com/tq-systems"/>
 
   <!-- TARGET SPECIFICS -->
-  <project path="meta-trustx-nxp" name="meta-trustx-nxp" remote="gyroidos" />
+  <project path="meta-gyroidos-nxp" name="meta-gyroidos-nxp" remote="gyroidos" />
 
   <!-- Freescale -->
   <project path="meta-freescale" name="meta-freescale" remote="yocto" />

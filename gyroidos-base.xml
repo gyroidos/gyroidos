@@ -26,7 +26,7 @@
      <linkfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
   </project>
   <project path="gyroidos/cml" name="cml" remote="gyroidos" />
-  <project path="meta-trustx" name="meta-trustx" remote="gyroidos" />
+  <project path="meta-gyroidos" name="meta-gyroidos" remote="gyroidos" />
   <project path="meta-tmedbg" name="meta-tmedbg" remote="gyroidos" />
 
   <!-- YOCTO UTILITIES/FEATURES -->
