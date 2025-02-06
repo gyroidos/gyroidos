@@ -5,6 +5,7 @@ RUN sed -i 's/Components: main/Components: main contrib/' /etc/apt/sources.list.
 # Essentials
 RUN apt-get update -y && apt-get install -y \
 	apt-utils \
+	passwd \
 	gawk \
 	wget \
 	git-core \
@@ -104,25 +105,24 @@ RUN locale-gen en_US.UTF-8
 
 # set image label
 ARG CML_BUILDER=jenkins
+ARG BUILDUSER=9001
+ARG KVM_GID
+
+RUN if ! [ -z "${BUILDUSER}" ];then \
+       echo "Preparing container home directory for user ${BUILDUSER}" && \
+       adduser builder --disabled-password --uid "${BUILDUSER}" --gecos "" && \
+       mkdir /home/builder/.ssh && \
+       chown builder:builder /home/builder/.ssh && \
+       chmod 700 /home/builder/.ssh && \
+       groupadd --gid ${KVM_GID} kvm &&  \
+       usermod -a -G kvm builder; \
+else \
+       echo "Docker build argument BUILDUSER not supplied, leaving unconfigured..."; \
+fi
 
 LABEL "com.gyroidos.builder"="${CML_BUILDER}"
 
+RUN bash -c "echo \"Building as user $(id), BUILDUSER: ${BUILDUSER}, KVM_GID: ${KVM_GID}\""
+
 # Set workdir
 WORKDIR "/opt/ws-yocto/"
-
-ARG BUILDUSER
-
-RUN if ! [ -z "${BUILDUSER}" ];then \
-	echo "Preparing container home directory for user ${BUILDUSER}" && \
-	adduser builder --disabled-password --uid "${BUILDUSER}" --gecos "" && \
-	mkdir /home/builder/.ssh && \
-	chown builder:builder /home/builder/.ssh && \
-	chmod 700 /home/builder/.ssh; \
-else \
-	echo "Docker build argument BUILDUSER not supplied, leaving unconfigured..."; \
-fi
-
-#COPY ./entrypoint.sh /usr/local/bin/entrypoint.sh
-
-#ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-
