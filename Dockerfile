@@ -57,7 +57,7 @@ RUN apt-get update -y && apt-get install -y \
 	apt-transport-https \
 # LLVM
 	clang \
-	clang-tools  \
+	clang-tools \
 	libclang-dev \
 	clang-format \
 	python3-clang \
@@ -86,9 +86,9 @@ RUN apt-get update -y && apt-get install -y \
 
 # Backport openssl 3.3 from debian trixie to make unit tests with openssl provider API work
 RUN echo "deb http://deb.debian.org/debian trixie main" > /etc/apt/sources.list.d/trixie.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    -t trixie openssl
+	apt-get update && \
+	apt-get install -y --no-install-recommends \
+	-t trixie openssl
 
 # protobuf-c-text library
 ADD https://github.com/gyroidos/external_protobuf-c-text/archive/refs/heads/master.zip /opt/external_protobuf-c-text-master.zip
@@ -109,15 +109,15 @@ ARG BUILDUSER=9001
 ARG KVM_GID
 
 RUN if ! [ -z "${BUILDUSER}" ];then \
-       echo "Preparing container home directory for user ${BUILDUSER}" && \
-       adduser builder --disabled-password --uid "${BUILDUSER}" --gecos "" && \
-       mkdir /home/builder/.ssh && \
-       chown builder:builder /home/builder/.ssh && \
-       chmod 700 /home/builder/.ssh && \
-       groupadd --gid ${KVM_GID} kvm &&  \
-       usermod -a -G kvm builder; \
+	echo "Preparing container home directory for user ${BUILDUSER}" && \
+	adduser builder --disabled-password --uid "${BUILDUSER}" --gecos "" && \
+	mkdir /home/builder/.ssh && \
+	chown builder:builder /home/builder/.ssh && \
+	chmod 700 /home/builder/.ssh && \
+	groupadd --gid ${KVM_GID} kvm && \
+	usermod -a -G kvm builder; \
 else \
-       echo "Docker build argument BUILDUSER not supplied, leaving unconfigured..."; \
+	echo "Docker build argument BUILDUSER not supplied, leaving unconfigured..."; \
 fi
 
 LABEL "com.gyroidos.builder"="${CML_BUILDER}"
