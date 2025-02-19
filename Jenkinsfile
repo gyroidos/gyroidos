@@ -9,11 +9,13 @@ pipeline {
 	environment {
 		YOCTO_VERSION = 'kirkstone'
 		BUILDUSER = "${sh(script:'id -u', returnStdout: true).trim()}"
-		KVM_GID = "${sh(script:'getent group kvm | cut -d: -f3', returnStdout: true).trim()}"
 	}
+
 
 	parameters {
 		string(name: 'CI_LIB_VERSION', defaultValue: 'main', description: 'Version of the gyroidos_ci_common library to be used (e.g. main or pull/<pr_num>/merge)')
+		string(name: 'LABEL_BUILDER', defaultValue: 'worker', description: 'Builder preference')
+		string(name: 'LABEL_TESTER', defaultValue: 'testing', description: 'Builder preference')
 		choice(name: 'GYROID_ARCH', choices: ['x86', 'arm32', 'arm64'], description: 'GyroidOS Target Architecture')
 		choice(name: 'GYROID_MACHINE', choices: ['genericx86-64', 'apalis-imx8', 'raspberrypi2', 'raspberrypi3-64', 'raspberrypi4-64', 'raspberrypi5', 'tqma8mpxl'], description: 'GyroidOS Target Machine (Must be compatible with GYROID_ARCH!)')
 		string(name: 'PR_BRANCHES', defaultValue: '', description: 'Comma separated list of pull request branches (e.g. meta-gyroidos=PR-177,meta-gyroidos-nxp=PR-13,gyroidos_build=PR-97)')
@@ -28,12 +30,9 @@ pipeline {
 	stages {
 		stage('Source checks + unit tests') {
 			agent {
-					dockerfile {
-						dir '.manifests'
-						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-						args '--entrypoint=\'\' --env NODE_NAME="${NODE_NAME}"'
-						reuseNode true
-					}
+				node {
+					label "${LABEL_BUILDER}"
+				}
 			}
 
 			stages {
@@ -41,18 +40,30 @@ pipeline {
 					steps {
 						echo "Running on node $NODE_NAME"
 
+
 						library identifier: "gyroidos_ci_common@${CI_LIB_VERSION}", retriever: modernSCM(
     						[$class: 'GitSCMSource', remote: "https://github.com/gyroidos/gyroidos_ci_common"])
+	
+						script {
+							def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests") 
+							docker_image.inside("--user ${BUILDUSER} --env NODE_NAME=${NODE_NAME}") {
+						        sh 'echo "Running inside container!"'
 
-						stepInitWs(workspace: "${WORKSPACE}",
-									manifest_path: "${WORKSPACE}/.manifests",
-									manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
-									gyroid_arch: GYROID_ARCH,
-									gyroid_machine: GYROID_MACHINE,
-									selector: buildParameter('BUILDSELECTOR'),
-									rebuild_previous: "${REBUILD_PREVIOUS}",
-									buildtype: "dev",
-									pr_branches: PR_BRANCHES)
+							sh 'echo "id: $(id)"'
+	
+
+							stepInitWs(workspace: "${WORKSPACE}",
+										manifest_path: "${WORKSPACE}/.manifests",
+										manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
+										gyroid_arch: GYROID_ARCH,
+										gyroid_machine: GYROID_MACHINE,
+										selector: buildParameter('BUILDSELECTOR'),
+										rebuild_previous: "${REBUILD_PREVIOUS}",
+										buildtype: "dev",
+										pr_branches: PR_BRANCHES)
+	
+							    }
+							}
 					}
 				}
 
@@ -70,33 +81,44 @@ pipeline {
 					}
 
 					parallel {
-							stage ('Code Format & Style') {
-								steps {
-									echo "Entering format test stage, workspace: ${WORKSPACE}"
-									stepFormatCheck(workspace: WORKSPACE,
-									sourcedir: "${WORKSPACE}/gyroidos/cml")
-								}
-							}
-
-							/*
-							 Intentionally mark the static code analysis stage as skipped
-							 We want to show that we are performing static code analysis, but not
-							 as part of Jenkins's pipeline.
-							*/
-							stage('Static Code Analysis') {
-								when { expression { return false }}
-
-								steps {
-									sh label: 'Perform static code analysis', script: '''
-										echo "Static Code Analysis is performed using Semmle."
-										echo "Please check GitHub's project for results from Semmle's analysis."
-									'''
-								}
-							}
-
-							stage ('Unit tests') {
+						stage ('Code Format & Style') {
 								steps {
 									script {
+										def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests") 
+										docker_image.inside("--user ${BUILDUSER} --env NODE_NAME=${NODE_NAME}") {
+									        sh 'echo "Running inside container!"'
+
+											echo "Entering format test stage, workspace: ${WORKSPACE}"
+											stepFormatCheck(workspace: WORKSPACE,
+											sourcedir: "${WORKSPACE}/gyroidos/cml")
+									}
+								}
+							}
+						}
+
+						/*
+						 Intentionally mark the static code analysis stage as skipped
+						 We want to show that we are performing static code analysis, but not
+						 as part of Jenkins's pipeline.
+						*/
+						stage('Static Code Analysis') {
+							when { expression { return false }}
+
+							steps {
+								sh label: 'Perform static code analysis', script: '''
+									echo "Static Code Analysis is performed using Semmle."
+									echo "Please check GitHub's project for results from Semmle's analysis."
+								'''
+							}
+						}
+
+						stage ('Unit tests') {
+							steps {
+								script {
+									def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests") 
+									docker_image.inside("--user ${BUILDUSER} --env NODE_NAME=${NODE_NAME}") {
+								        sh 'echo "Running inside container!"'
+
 										echo "Running on node $NODE_NAME"
 										stepUnitTests(workspace: WORKSPACE,
 													  sourcedir: "${WORKSPACE}/gyroidos/cml")
@@ -106,7 +128,8 @@ pipeline {
 						}
 					}
 				}
-			} // Source checks + unit tests
+			}
+		} // Source checks + unit tests
 
 
 		stage ('Build + Test Images') {
@@ -121,12 +144,8 @@ pipeline {
 				}
 
 				agent {
-					dockerfile {
-						dir ".manifests"
-						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-						args '''--entrypoint=\'\' -v /yocto_mirror/:/yocto_mirror --env NODE_NAME="${NODE_NAME}"
-							  -v /home/${NODE_JENKINS_USER}/.ssh/known_hosts:/home/builder/.ssh/ci_known_hosts'''
-						reuseNode false
+					node {
+						label "${LABEL_BUILDER}"
 					}
 				}
 
@@ -134,16 +153,37 @@ pipeline {
 					stage ('Build image') {
 						steps {
 							script {
+								def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests") 
+
+								def run_args = '''--user ${BUILDUSER} -v /yocto_mirror/:/yocto_mirror --env NODE_NAME="${NODE_NAME}"
+								  -v /home/${NODE_JENKINS_USER}/.ssh/known_hosts:/home/builder/.ssh/ci_known_hosts'''
+
+								docker_image.inside(run_args) {
+						        sh 'echo "Running inside container!"'
+
+								sh 'echo id: $(id)'
+								sh 'echo "ps: $(bash -c "ps | grep cat")"'
+	
 								if ("y" == SYNC_MIRRORS) {
 								    sh label: 'Prepare .ssh/config', script: '''
-									echo "Preparing .ssh/config for mirror sync"
+										echo "Preparing .ssh/config for mirror sync"
 
-								    cat > /home/builder/.ssh/config << EOF 
-UserKnownHostsFile /home/builder/.ssh/ci_known_hosts
-EOF
+									   echo "UserKnownHostsFile /home/builder/.ssh/ci_known_hosts" >> /home/builder/.ssh/config
 									'''
-
-									sshagent(credentials: ['MIRROR_ACCESS']){
+	
+									sshagent(credentials: ['MIRROR']){
+										sh label: 'sshtest', script: """
+											echo "Test ssh agent"
+											cat /home/builder/.ssh/ci_known_hosts
+											cat /home/builder/.ssh/config
+											ssh -v ${env.MIRRORHOST} "ls -al /yocto_mirror"
+										"""
+									}
+	
+	
+	
+	
+									sshagent(credentials: ['MIRROR']){
 										stepBuildImage(workspace: WORKSPACE,
 											manifest_path: "${WORKSPACE}/.manifests",
 											manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
@@ -160,7 +200,7 @@ EOF
 									}
 								} else {
 									echo "wont sync mirrors"
-
+	
 									stepBuildImage(workspace: WORKSPACE,
 													manifest_path: "${WORKSPACE}/.manifests",
 													manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
@@ -177,8 +217,9 @@ EOF
 								}
 							}
 						}
-					}
-				}
+					} // steps
+				} //stage
+				} // stages
 			} // matrix
 		} // stage 'Build + Test Images'
 
@@ -192,29 +233,38 @@ EOF
 					}
 				}
 
+
 				agent {
-					dockerfile {
-						dir ".manifests"
-						additionalBuildArgs '--build-arg=BUILDUSER=$BUILDUSER'
-						args '--entrypoint=\'\' --device=/dev/kvm --group-add=$KVM_GID -p 2222 -p 5901 --env NODE_NAME="${NODE_NAME}"'
-						label 'worker'
-					}
+					node { label "${LABEL_TESTER}" }
 				}
 
 				stages {
 					stage ('Perform tests') {
 						steps {
-							stepIntegrationTest(workspace: "${WORKSPACE}",
-								manifest_path: "${WORKSPACE}/.manifests",
-								source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
-								gyroid_machine: GYROID_MACHINE,
-								buildtype: "${BUILDTYPE}",
-								test_mode: "${"asan" == BUILDTYPE ? "dev" : BUILDTYPE}",
-								selector: buildParameter('BUILDSELECTOR'),
-								stage_name: STAGE_NAME,
-								schsm_serial: "",
-								schsm_pin: "")
-						}
+							script {
+								def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests") 
+								def run_args = "--user ${BUILDUSER} --device=/dev/kvm -p 2222 -p 5901 --env NODE_NAME=${NODE_NAME} --env KVM_GID=${env.KVM_GID}"
+
+								docker_image.inside(run_args) {
+						        	sh 'echo "Running inside container!"'
+
+									sh 'echo "id: $(id)"'
+									sh 'echo "groups: $(groups builder)"'
+									sh 'echo "ps: $(bash -c "ps | grep cat")"'
+	
+									stepIntegrationTest(workspace: "${WORKSPACE}",
+										manifest_path: "${WORKSPACE}/.manifests",
+										source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
+										gyroid_machine: GYROID_MACHINE,
+										buildtype: "${BUILDTYPE}",
+										test_mode: "${"asan" == BUILDTYPE ? "dev" : BUILDTYPE}",
+										selector: buildParameter('BUILDSELECTOR'),
+										stage_name: STAGE_NAME,
+										schsm_serial: "",
+										schsm_pin: "")
+								}
+							}
+						} // steps
 					} // stage 'Perform tests'
 				} // stages
 			} // matrix
@@ -222,7 +272,7 @@ EOF
 
 		stage ('Token Tests') {
 			agent {
-				node { label 'testing' }
+				node { label "testing" }
 			}
 
 			steps {
