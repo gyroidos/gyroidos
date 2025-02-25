@@ -24,6 +24,8 @@ pipeline {
 		buildSelector defaultSelector: specific('${BUILD_NUMBER}'), name: 'BUILDSELECTOR', description: 'Image to perform integration tests on. Changing the default value skips the image build.'
 		choice(name: 'SYNC_MIRRORS', choices: ['n', 'y'], description: 'Sync source mirrors after successful build')
 		booleanParam(name: 'SKIP_WS_CLEANUP', defaultValue: false, description: 'If true, workspace cleanup after build will be skipped')
+		string(name: 'PKI_PATH', defaultValue: '', description: 'PKI path')
+		password(name: 'PKI_PASSWORD', defaultValue: '', description: 'PKI password')
 	}
 
 
@@ -178,7 +180,9 @@ pipeline {
 												selector: buildParameter('BUILDSELECTOR'),
 												build_installer: BUILD_INSTALLER,
 												sync_mirrors: SYNC_MIRRORS,
-												rebuild_previous: REBUILD_PREVIOUS)
+												rebuild_previous: REBUILD_PREVIOUS,
+												pki: PKI_PATH,
+												pki_passwd: PKI_PASSWORD)
 										}
 									} else {
 										echo "wont sync mirrors"
@@ -195,7 +199,9 @@ pipeline {
 											selector: buildParameter('BUILDSELECTOR'),
 											build_installer: BUILD_INSTALLER,
 											sync_mirrors: SYNC_MIRRORS,
-											rebuild_previous: REBUILD_PREVIOUS)
+											rebuild_previous: REBUILD_PREVIOUS,
+											pki: PKI_PATH,
+											pki_passwd: PKI_PASSWORD)
 									}
 								}
 							}
