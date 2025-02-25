@@ -256,18 +256,16 @@ pipeline {
 			}
 
 			steps {
-				lock('schsm-test') {
-					stepIntegrationTest(workspace: "${WORKSPACE}",
-						manifest_path: "${WORKSPACE}/.manifests",
-						source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
-						gyroid_machine: GYROID_MACHINE,
-						buildtype: "schsm",
-						test_mode: "ccmode",
-						selector: buildParameter('BUILDSELECTOR'),
-						stage_name: STAGE_NAME,
-						schsm_serial: "${env.PHYSHSM}",
-						schsm_pin: "${env.PHYSHSM_PIN}")
-				}
+				stepIntegrationTest(workspace: "${WORKSPACE}",
+					manifest_path: "${WORKSPACE}/.manifests",
+					source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
+					gyroid_machine: GYROID_MACHINE,
+					buildtype: "schsm",
+					test_mode: "ccmode",
+					selector: buildParameter('BUILDSELECTOR'),
+					stage_name: STAGE_NAME,
+					schsm_serial: "${env.PHYSHSM}",
+					schsm_pin: "${env.PHYSHSM_PIN}")
 			}
 		} // stage 'Token Tests'
 
