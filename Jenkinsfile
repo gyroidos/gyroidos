@@ -13,7 +13,7 @@ pipeline {
 
 
 	parameters {
-		string(name: 'CI_LIB_VERSION', defaultValue: 'main', description: 'Version of the gyroidos_ci_common library to be used (e.g. main or pull/<pr_num>/merge)')
+		string(name: 'CI_LIB_VERSION', defaultValue: 'v1.0', description: 'Version of the gyroidos_ci_common library to be used (e.g. main or pull/<pr_num>/merge)')
 		string(name: 'LABEL_BUILDER', defaultValue: 'worker', description: 'Builder preference')
 		string(name: 'LABEL_TESTER', defaultValue: 'tester', description: 'Tester preference')
 		choice(name: 'GYROID_ARCH', choices: ['x86', 'arm32', 'arm64'], description: 'GyroidOS Target Architecture')
@@ -24,6 +24,8 @@ pipeline {
 		buildSelector defaultSelector: specific('${BUILD_NUMBER}'), name: 'BUILDSELECTOR', description: 'Image to perform integration tests on. Changing the default value skips the image build.'
 		choice(name: 'SYNC_MIRRORS', choices: ['n', 'y'], description: 'Sync source mirrors after successful build')
 		booleanParam(name: 'SKIP_WS_CLEANUP', defaultValue: false, description: 'If true, workspace cleanup after build will be skipped')
+		string(name: 'PKI_PATH', defaultValue: '', description: 'PKI path')
+		password(name: 'PKI_PASSWORD', defaultValue: '', description: 'PKI password')
 	}
 
 
@@ -178,7 +180,8 @@ pipeline {
 												selector: buildParameter('BUILDSELECTOR'),
 												build_installer: BUILD_INSTALLER,
 												sync_mirrors: SYNC_MIRRORS,
-												rebuild_previous: REBUILD_PREVIOUS)
+												pki: PKI_PATH,
+												pki_passwd: PKI_PASSWORD)
 										}
 									} else {
 										echo "wont sync mirrors"
@@ -195,7 +198,9 @@ pipeline {
 											selector: buildParameter('BUILDSELECTOR'),
 											build_installer: BUILD_INSTALLER,
 											sync_mirrors: SYNC_MIRRORS,
-											rebuild_previous: REBUILD_PREVIOUS)
+											rebuild_previous: REBUILD_PREVIOUS,
+											pki: PKI_PATH,
+											pki_passwd: PKI_PASSWORD)
 									}
 								}
 							}
