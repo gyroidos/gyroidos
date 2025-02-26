@@ -26,6 +26,8 @@ pipeline {
 		booleanParam(name: 'SKIP_WS_CLEANUP', defaultValue: false, description: 'If true, workspace cleanup after build will be skipped')
 		string(name: 'PKI_PATH', defaultValue: '', description: 'PKI path')
 		password(name: 'PKI_PASSWORD', defaultValue: '', description: 'PKI password')
+		booleanParam(name: 'SET_KEEP_FOREVER', defaultValue: false, description: 'Set "Keep this build forever"')
+		string(name: 'SET_DISPLAY_NAME', defaultValue: "${BUILD_NUMBER}", description: 'Set display name')
 	}
 
 
@@ -46,6 +48,14 @@ pipeline {
 							[$class: 'GitSCMSource', remote: "https://github.com/gyroidos/gyroidos_ci_common"])
 
 						script {
+							if (SET_KEEP_FOREVER) {
+								currentBuild.setKeepLog(true)
+							}
+
+							if ("" != SET_DISPLAY_NAME) {
+								currentBuild.displayName = SET_DISPLAY_NAME
+							}
+
 							def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
 							docker_image.inside("--user ${BUILDUSER} --env NODE_NAME=${NODE_NAME}") {
 								stepInitWs(workspace: "${WORKSPACE}",
