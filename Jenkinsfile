@@ -27,7 +27,7 @@ pipeline {
 		string(name: 'PKI_PATH', defaultValue: '', description: 'PKI path')
 		password(name: 'PKI_PASSWORD', defaultValue: '', description: 'PKI password')
 		booleanParam(name: 'SET_KEEP_FOREVER', defaultValue: false, description: 'Set "Keep this build forever"')
-		string(name: 'SET_DISPLAY_NAME', defaultValue: "${BUILD_NUMBER}", description: 'Set display name')
+		string(name: 'SET_DISPLAY_NAME', defaultValue: "", description: 'Set display name')
 	}
 
 
