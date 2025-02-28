@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- DEFAULT REMOTES AND REPOS -->
+  <include name="gyroidos-base.xml" />
+
+  <!-- TARGET SPECIFICS -->
+  <project path="meta-gyroidos-intel" name="meta-gyroidos-intel" remote="gyroidos" revision="fe05367244b43975988e6b00bc10f0da65003ff7"/>
+</manifest>

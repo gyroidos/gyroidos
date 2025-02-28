@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- DEFAULT REMOTES AND REPOS -->
+  <include name="gyroidos-base.xml" />
+
+  <!-- ADDITIONAL REMOTES -->
+  <remote  name="freescale"
+    fetch="https://github.com/Freescale"/>
+
+  <remote  name="tq"
+    fetch="https://github.com/tq-systems"/>
+
+  <!-- TARGET SPECIFICS -->
+  <project path="meta-gyroidos-nxp" name="meta-gyroidos-nxp" remote="gyroidos" revision="1c76a85e496e1fe52a7ca89be9cba2c335871820"/>
+
+  <!-- Freescale -->
+  <project path="meta-freescale" name="meta-freescale" remote="yocto" revision="c525e0c19bdc46d45f71873b5f286f49abb69418"/>
+
+  <!-- tq -->
+  <project path="meta-tq" name="meta-tq" remote="tq" revision="8ea9314df8a11eabb38946f064c83b8e8bb1990c"/>
+
+</manifest>
