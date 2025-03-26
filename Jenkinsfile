@@ -48,12 +48,18 @@ pipeline {
 							[$class: 'GitSCMSource', remote: "https://github.com/gyroidos/gyroidos_ci_common"])
 
 						script {
-							if (SET_KEEP_FOREVER) {
+							if (params.SET_KEEP_FOREVER) {
+								echo "Keeping this build forever"
 								currentBuild.setKeepLog(true)
+							} else {
+								echo "Leaving currentBuild.keepLog as is: ${currentBuild.keepLog}"	
 							}
 
-							if ("" != SET_DISPLAY_NAME) {
-								currentBuild.displayName = SET_DISPLAY_NAME
+							if ("" != params.SET_DISPLAY_NAME) {
+								echo "Setting name to ${params.SET_DISPLAY_NAME}"
+								currentBuild.displayName = params.SET_DISPLAY_NAME
+							} else {
+								echo "Leaving currentBuild.displayName as is: ${currentBuild.displayName}"	
 							}
 
 							def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
