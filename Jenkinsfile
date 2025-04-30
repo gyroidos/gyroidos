@@ -153,7 +153,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-						values 'dev', 'production', 'ccmode', 'schsm', 'asan'
+						values 'dev', 'production', 'ccmode', 'schsm', 'bnse', 'asan'
 					}
 				}
 
@@ -304,8 +304,10 @@ pipeline {
 										test_mode: "${"asan" == BUILDTYPE ? "dev" : BUILDTYPE}",
 										selector: buildParameter('BUILDSELECTOR'),
 										stage_name: STAGE_NAME,
-										schsm_serial: "",
-										schsm_pin: "")
+										hsm_serial: "",
+										hsm_vid: "",
+										hsm_pid: "",
+										hsm_pin: "")
 								}
 							}
 						} // steps
@@ -314,7 +316,7 @@ pipeline {
 			} // matrix
 		} // stage 'Integration Tests'
 
-		stage('Token Tests') {
+		stage('Token Tests (SCHSM)') {
 			agent {
 				node {
 					label "tokentest"
@@ -332,8 +334,33 @@ pipeline {
 					test_mode: "ccmode",
 					selector: buildParameter('BUILDSELECTOR'),
 					stage_name: STAGE_NAME,
-					schsm_serial: "${env.PHYSHSM}",
-					schsm_pin: "${env.PHYSHSM_PIN}")
+					hsm_serial: "${env.SCHSM_SERIAL}",
+					hsm_vid: "${env.SCHSM_VID}",
+					hsm_pid: "${env.SCHSM_PID}",
+					hsm_pin: "${env.PHYSHSM_PIN}")
+			}
+		} // stage 'Token Tests'
+
+		stage('Token Tests (BNSE)') {
+			agent {
+				node {
+					label "tokentest"
+				}
+			}
+
+			steps {
+				stepIntegrationTest(workspace: "${WORKSPACE}",
+					manifest_path: "${WORKSPACE}/.manifests",
+					source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
+					gyroid_machine: GYROID_MACHINE,
+					buildtype: "bnse",
+					test_mode: "ccmode",
+					selector: buildParameter('BUILDSELECTOR'),
+					stage_name: STAGE_NAME,
+					hsm_serial: "${env.BNSE_SERIAL}",
+					hsm_vid: "${env.BNSE_VID}",
+					hsm_pid: "${env.BNSE_PID}",
+					hsm_pin: "${env.PHYSHSM_PIN}")
 			}
 		} // stage 'Token Tests'
 
