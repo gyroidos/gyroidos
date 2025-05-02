@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- DEFAULT REMOTES AND REPOS -->
+  <include name="gyroidos-base.xml" />
+
+  <!-- ADDITIONAL REMOTES -->
+  <remote  name="polarfire"
+    fetch="https://github.com/polarfire-soc"/>
+
+  <!-- TARGET SPECIFICS -->
+  <project path="meta-gyroidos-riscv" name="meta-gyroidos-riscv" remote="gyroidos" />
+  <project path="meta-polarfire-soc-yocto-bsp" name="meta-polarfire-soc-yocto-bsp" remote="polarfire" />
+</manifest>
