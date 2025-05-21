@@ -7,7 +7,7 @@ pipeline {
 	}
 
 	environment {
-		YOCTO_VERSION = 'kirkstone'
+		YOCTO_VERSION = 'scarthgap'
 		BUILDUSER = "${sh(script:'id -u', returnStdout: true).trim()}"
 	}
 
