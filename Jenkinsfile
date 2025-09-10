@@ -175,6 +175,42 @@ pipeline {
 												-v /home/${NODE_JENKINS_USER}/.ssh/known_hosts:/home/builder/.ssh/ci_known_hosts'''
 
 								docker_image.inside(run_args) {
+									def doBuild = {
+										env.PKI_PASSWD = params.PKI_PASSWD
+
+										sh label: 'Perform Yocto build', script: """
+											if ! [ -z "${PKI_PATH}" ];then
+												echo "Using PKI at ${PKI_PATH}"
+												ln -s /yocto_mirror/gyroidos_release_pki "${WORKSPACE}/out-${WORKSPACE}/test_certificates"
+
+												ls -al "${WORKSPACE}/out-${WORKSPACE}/test_certificates"
+
+												if ! [ -z "\$PKI_PASSWD" ];then
+													export KBUILD_SIGN_PIN="\$PKI_PASSWD"
+													export GYROIDOS_TEST_PASSWD_PKI="\$PKI_PASSWD"
+												fi
+											else
+												echo "No PKI specified, new one will be generated"
+											fi
+
+											cd "${WORKSPACE}"
+											env
+
+											echo "Building gyroidos-core"
+											. gyroidos/build/yocto/init_ws_ids.sh "out-${BUILDTYPE}" "${GYROID_ARCH}" "${GYROID_MACHINE}"
+
+											bitbake mc:guestos:gyroidos-core
+
+											echo "Building gyroidos-cml"
+											bitbake gyroidos-cml
+
+											if [ "y" = "${BUILD_INSTALLER}" ];then
+												echo "Building gyroidos-installer"
+												bitbake multiconfig:installer:gyroidos-installer
+											fi
+										"""
+									}
+
 									if ("y" == SYNC_MIRRORS) {
 										sh label: 'Prepare .ssh/config', script: '''
 											echo "Preparing .ssh/config for mirror sync"
@@ -198,16 +234,14 @@ pipeline {
 												gyroid_arch: GYROID_ARCH,
 												gyroid_machine: GYROID_MACHINE,
 												buildtype: BUILDTYPE,
-												build_coreos: true,
 												selector: buildParameter('BUILDSELECTOR'),
-												build_installer: BUILD_INSTALLER,
 												sync_mirrors: SYNC_MIRRORS,
 												rebuild_previous: REBUILD_PREVIOUS,
-												pki: PKI_PATH,
-												pki_passwd: PKI_PASSWORD)
+												buildSteps: doBuild
+												)
 										}
 									} else {
-										echo "wont sync mirrors"
+										echo "won't sync mirrors"
 
 										stepBuildImage(workspace: WORKSPACE,
 											manifest_path: "${WORKSPACE}/.manifests",
@@ -217,13 +251,11 @@ pipeline {
 											gyroid_arch: GYROID_ARCH,
 											gyroid_machine: GYROID_MACHINE,
 											buildtype: BUILDTYPE,
-											build_coreos: true,
 											selector: buildParameter('BUILDSELECTOR'),
-											build_installer: BUILD_INSTALLER,
 											sync_mirrors: SYNC_MIRRORS,
 											rebuild_previous: REBUILD_PREVIOUS,
-											pki: PKI_PATH,
-											pki_passwd: PKI_PASSWORD)
+											buildSteps: doBuild
+										)
 									}
 								}
 							}
