@@ -118,6 +118,8 @@ pipeline {
 							}
 
 							steps {
+								echo "Running on node $NODE_NAME"
+
 								sh label: 'Perform static code analysis', script: '''
 								echo "Static Code Analysis is performed using Semmle."
 								echo "Please check GitHub's project for results from Semmle's analysis."
@@ -127,6 +129,8 @@ pipeline {
 
 						stage('Unit tests') {
 							steps {
+								echo "Running on node $NODE_NAME"
+
 								script {
 									def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
 									docker_image.inside("--user ${BUILDUSER} --env NODE_NAME=${NODE_NAME}") {
@@ -162,6 +166,8 @@ pipeline {
 				stages {
 					stage('Build image') {
 						steps {
+							echo "Running on node $NODE_NAME"
+
 							script {
 								def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
 
@@ -247,6 +253,8 @@ pipeline {
 				stages {
 					stage('Perform tests') {
 						steps {
+							echo "Running on node $NODE_NAME"
+
 							script {
 								def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
 								def run_args = "--user ${BUILDUSER} --device=/dev/kvm -p 2222 -p 5901 --env NODE_NAME=${NODE_NAME} --env KVM_GID=${env.KVM_GID}"
@@ -278,6 +286,8 @@ pipeline {
 			}
 
 			steps {
+				echo "Running on node $NODE_NAME"
+
 				stepIntegrationTest(workspace: "${WORKSPACE}",
 					manifest_path: "${WORKSPACE}/.manifests",
 					source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
