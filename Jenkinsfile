@@ -181,9 +181,12 @@ pipeline {
 										sh label: 'Perform Yocto build', script: """
 											if ! [ -z "${PKI_PATH}" ];then
 												echo "Using PKI at ${PKI_PATH}"
-												ln -s /yocto_mirror/gyroidos_release_pki "${WORKSPACE}/out-${WORKSPACE}/test_certificates"
 
-												ls -al "${WORKSPACE}/out-${WORKSPACE}/test_certificates"
+												ls -al /yocto_mirror
+
+												ln -s /yocto_mirror/gyroidos_release_pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates"
+
+												ls -al "${WORKSPACE}/out-${BUILDTYPE}/test_certificates"
 
 												if ! [ -z "\$PKI_PASSWD" ];then
 													export KBUILD_SIGN_PIN="\$PKI_PASSWD"
