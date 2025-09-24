@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- DEFAULT REMOTES AND REPOS -->
+  <include name="gyroidos-base.xml" />
+
+  <!-- ADDITIONAL REMOTES -->
+  <remote  name="openhwgroup"
+    revision="main"
+    fetch="https://github.com/openhwgroup"/>
+
+  <!-- TARGET SPECIFICS -->
+  <project path="meta-gyroidos-cva6" name="meta-gyroidos-cva6" remote="gyroidos" />
+  <!-- switch remote to openhwgroup when upstream PR is merged -->
+  <project path="meta-cva6-yocto" name="meta-cva6-yocto" remote="gyroidos" />
+</manifest>
