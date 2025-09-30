@@ -17,7 +17,7 @@ pipeline {
 		string(name: 'LABEL_BUILDER', defaultValue: 'worker', description: 'Builder preference')
 		string(name: 'LABEL_TESTER', defaultValue: 'tester', description: 'Tester preference')
 		choice(name: 'GYROID_ARCH', choices: ['x86', 'arm32', 'arm64', 'riscv'], description: 'GyroidOS Target Architecture')
-		choice(name: 'GYROID_MACHINE', choices: ['genericx86-64', 'apalis-imx8', 'raspberrypi2', 'raspberrypi3-64', 'raspberrypi4-64', 'raspberrypi5', 'tqma8mpxl', 'beaglev-fire'], description: 'GyroidOS Target Machine (Must be compatible with GYROID_ARCH!)')
+		choice(name: 'GYROID_MACHINE', choices: ['genericx86-64', 'apalis-imx8', 'raspberrypi2', 'raspberrypi3-64', 'raspberrypi4-64', 'raspberrypi5', 'tqma8mpxl', 'tqmlx2160a', 'ls1088ardb-pb', 'beaglev-fire'], description: 'GyroidOS Target Machine (Must be compatible with GYROID_ARCH!)')
 		string(name: 'PR_BRANCHES', defaultValue: '', description: 'Comma separated list of pull request branches (e.g. meta-gyroidos=PR-177,meta-gyroidos-nxp=PR-13,gyroidos_build=PR-97)')
 		choice(name: 'BUILD_INSTALLER', choices: ['n', 'y'], description: 'Build the GyroidOS installer (x86 only)')
 		choice(name: 'REBUILD_PREVIOUS', choices: ['n', 'y'], description: 'Rebuild selected, previous build instead of just reusing image from artifacts')
@@ -27,7 +27,7 @@ pipeline {
 		string(name: 'PKI_PATH', defaultValue: '', description: 'PKI path')
 		password(name: 'PKI_PASSWORD', defaultValue: '', description: 'PKI password')
 		booleanParam(name: 'SET_KEEP_FOREVER', defaultValue: false, description: 'Set "Keep this build forever"')
-		string(name: 'SET_DISPLAY_NAME', defaultValue: "${BUILD_NUMBER}", description: 'Set display name')
+		string(name: 'SET_DISPLAY_NAME', defaultValue: "", description: 'Set display name')
 	}
 
 
@@ -118,6 +118,8 @@ pipeline {
 							}
 
 							steps {
+								echo "Running on node $NODE_NAME"
+
 								sh label: 'Perform static code analysis', script: '''
 								echo "Static Code Analysis is performed using Semmle."
 								echo "Please check GitHub's project for results from Semmle's analysis."
@@ -127,6 +129,8 @@ pipeline {
 
 						stage('Unit tests') {
 							steps {
+								echo "Running on node $NODE_NAME"
+
 								script {
 									def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
 									docker_image.inside("--user ${BUILDUSER} --env NODE_NAME=${NODE_NAME}") {
@@ -162,6 +166,8 @@ pipeline {
 				stages {
 					stage('Build image') {
 						steps {
+							echo "Running on node $NODE_NAME"
+
 							script {
 								def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
 
@@ -169,6 +175,45 @@ pipeline {
 												-v /home/${NODE_JENKINS_USER}/.ssh/known_hosts:/home/builder/.ssh/ci_known_hosts'''
 
 								docker_image.inside(run_args) {
+									def doBuild = {
+										env.PKI_PASSWD = params.PKI_PASSWD
+
+										sh label: 'Perform Yocto build', script: """
+											if ! [ -z "${PKI_PATH}" ];then
+												echo "Using PKI at ${PKI_PATH}"
+
+												ls -al /yocto_mirror
+
+												ln -s /yocto_mirror/gyroidos_release_pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates"
+
+												ls -al "${WORKSPACE}/out-${BUILDTYPE}/test_certificates"
+
+												if ! [ -z "\$PKI_PASSWD" ];then
+													export KBUILD_SIGN_PIN="\$PKI_PASSWD"
+													export GYROIDOS_TEST_PASSWD_PKI="\$PKI_PASSWD"
+												fi
+											else
+												echo "No PKI specified, new one will be generated"
+											fi
+
+											cd "${WORKSPACE}"
+											env
+
+											echo "Building gyroidos-core"
+											. gyroidos/build/yocto/init_ws_ids.sh "out-${BUILDTYPE}" "${GYROID_ARCH}" "${GYROID_MACHINE}"
+
+											bitbake mc:guestos:gyroidos-core
+
+											echo "Building gyroidos-cml"
+											bitbake gyroidos-cml
+
+											if [ "y" = "${BUILD_INSTALLER}" ];then
+												echo "Building gyroidos-installer"
+												bitbake multiconfig:installer:gyroidos-installer
+											fi
+										"""
+									}
+
 									if ("y" == SYNC_MIRRORS) {
 										sh label: 'Prepare .ssh/config', script: '''
 											echo "Preparing .ssh/config for mirror sync"
@@ -192,16 +237,14 @@ pipeline {
 												gyroid_arch: GYROID_ARCH,
 												gyroid_machine: GYROID_MACHINE,
 												buildtype: BUILDTYPE,
-												build_coreos: true,
 												selector: buildParameter('BUILDSELECTOR'),
-												build_installer: BUILD_INSTALLER,
 												sync_mirrors: SYNC_MIRRORS,
 												rebuild_previous: REBUILD_PREVIOUS,
-												pki: PKI_PATH,
-												pki_passwd: PKI_PASSWORD)
+												buildSteps: doBuild
+												)
 										}
 									} else {
-										echo "wont sync mirrors"
+										echo "won't sync mirrors"
 
 										stepBuildImage(workspace: WORKSPACE,
 											manifest_path: "${WORKSPACE}/.manifests",
@@ -211,13 +254,11 @@ pipeline {
 											gyroid_arch: GYROID_ARCH,
 											gyroid_machine: GYROID_MACHINE,
 											buildtype: BUILDTYPE,
-											build_coreos: true,
 											selector: buildParameter('BUILDSELECTOR'),
-											build_installer: BUILD_INSTALLER,
 											sync_mirrors: SYNC_MIRRORS,
 											rebuild_previous: REBUILD_PREVIOUS,
-											pki: PKI_PATH,
-											pki_passwd: PKI_PASSWORD)
+											buildSteps: doBuild
+										)
 									}
 								}
 							}
@@ -247,6 +288,8 @@ pipeline {
 				stages {
 					stage('Perform tests') {
 						steps {
+							echo "Running on node $NODE_NAME"
+
 							script {
 								def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
 								def run_args = "--user ${BUILDUSER} --device=/dev/kvm -p 2222 -p 5901 --env NODE_NAME=${NODE_NAME} --env KVM_GID=${env.KVM_GID}"
@@ -278,6 +321,8 @@ pipeline {
 			}
 
 			steps {
+				echo "Running on node $NODE_NAME"
+
 				stepIntegrationTest(workspace: "${WORKSPACE}",
 					manifest_path: "${WORKSPACE}/.manifests",
 					source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
