@@ -1,4 +1,4 @@
-FROM debian:bookworm
+FROM debian:trixie
 
 RUN sed -i 's/Components: main/Components: main contrib/' /etc/apt/sources.list.d/debian.sources
 
@@ -55,6 +55,7 @@ RUN apt-get update -y && apt-get install -y \
 	libcap-dev \
 	libselinux-dev \
 	apt-transport-https \
+    e2fsprogs \
 # LLVM
 	clang \
 	clang-tools \
@@ -75,20 +76,15 @@ RUN apt-get update -y && apt-get install -y \
 	parted \
 	e2tools \
 # user interaction
-	libtar-dev \
 	screen \
 	locales \
 	ca-certificates \
 	gosu \
 	locales \
 # optee python dependings
-	python3-cryptography
-
-# Backport openssl 3.3 from debian trixie to make unit tests with openssl provider API work
-RUN echo "deb http://deb.debian.org/debian trixie main" > /etc/apt/sources.list.d/trixie.list && \
-	apt-get update && \
-	apt-get install -y --no-install-recommends \
-	-t trixie openssl
+	python3-cryptography \
+# Yocto requirements
+	python3-distutils-extra
 
 # protobuf-c-text library
 ADD https://github.com/gyroidos/external_protobuf-c-text/archive/refs/heads/master.zip /opt/external_protobuf-c-text-master.zip

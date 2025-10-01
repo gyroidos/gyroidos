@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- DEFAULT REMOTES AND REPOS -->
+  <include name="gyroidos-base.xml" />
+
+  <!-- ADDITIONAL REMOTES -->
+  <remote  name="freescale"
+    fetch="https://github.com/Freescale"/>
+
+  <!-- TARGET SPECIFICS -->
+  <project path="meta-gyroidos-nxp" name="meta-gyroidos-nxp" remote="gyroidos" />
+
+  <!-- Freescale -->
+  <project path="meta-freescale" name="meta-freescale" remote="yocto" />
+
+</manifest>
