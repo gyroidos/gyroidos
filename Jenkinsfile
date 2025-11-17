@@ -175,6 +175,28 @@ pipeline {
 												-v /home/${NODE_JENKINS_USER}/.ssh/known_hosts:/home/builder/.ssh/ci_known_hosts'''
 
 								docker_image.inside(run_args) {
+									def doInitWs = {
+										env.DEVELOPMENT_BUILD = "${("production" == target.buildtype) || ("ccmode" == target.buildtype) ? 'n' : 'y'}"
+										env.CC_MODE = "${("ccmode" == target.buildtype) || ("schsm" == target.buildtype) ? 'y' : 'n'}"
+										env.ENABLE_SCHSM = "1"
+										env.GYROIDOS_SANITIZERS = "${("asan" == target.buildtype) ? '1' : '0'}"
+										env.GYROIDOS_PLAIN_DATAPART = "${("production" == target.buildtype) || ("ccmode" == target.buildtype) || ("schsm" == target.buildtype) ? '1' : '0'}"
+									 
+										sh label: 'Sourcing init_ws.sh', script: """
+											export LC_ALL=en_US.UTF-8
+											export LANG=en_US.UTF-8
+											export LANGUAGE=en_US.UTF-8
+									 
+											echo "Workspace preparation environment:"
+											env
+									 
+									 
+											cd ${target.workspace}/
+									 
+											. gyroidos/build/yocto/init_ws_ids.sh out-${target.buildtype} ${target.gyroid_arch} ${target.gyroid_machine}
+										"""
+									}
+
 									def doBuild = {
 										env.PKI_PASSWD = params.PKI_PASSWD
 
@@ -240,6 +262,7 @@ pipeline {
 												selector: buildParameter('BUILDSELECTOR'),
 												sync_mirrors: SYNC_MIRRORS,
 												rebuild_previous: REBUILD_PREVIOUS,
+												doInitWs: doInitWs,
 												buildSteps: doBuild
 												)
 										}
@@ -257,6 +280,7 @@ pipeline {
 											selector: buildParameter('BUILDSELECTOR'),
 											sync_mirrors: SYNC_MIRRORS,
 											rebuild_previous: REBUILD_PREVIOUS,
+											doInitWs: doInitWs,
 											buildSteps: doBuild
 										)
 									}
