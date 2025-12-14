@@ -172,7 +172,8 @@ pipeline {
 								def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
 
 								def run_args = '''--user ${BUILDUSER} -v /yocto_mirror/:/yocto_mirror --env NODE_NAME="${NODE_NAME}"
-												-v /home/${NODE_JENKINS_USER}/.ssh/known_hosts:/home/builder/.ssh/ci_known_hosts'''
+												-v /home/${NODE_JENKINS_USER}/.ssh/known_hosts:/home/builder/.ssh/ci_known_hosts
+												--tmpfs /ext_tmpfs'''
 
 								docker_image.inside(run_args) {
 									def doBuild = {
@@ -400,3 +401,4 @@ pipeline {
 		}
 	}
 } // pipeline
+// vim: ts=4
