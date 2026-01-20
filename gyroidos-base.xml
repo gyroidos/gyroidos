@@ -16,7 +16,7 @@
     fetch="https://github.com/"/>
 
   <!--     DEFAULTS    -->
-  <default revision="kirkstone"
+  <default revision="scarthgap"
            remote="yocto"
            sync-j="4" />
 
