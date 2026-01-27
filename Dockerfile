@@ -55,7 +55,7 @@ RUN apt-get update -y && apt-get install -y \
 	libcap-dev \
 	libselinux-dev \
 	apt-transport-https \
-    e2fsprogs \
+	e2fsprogs \
 # LLVM
 	clang \
 	clang-tools \
@@ -69,6 +69,8 @@ RUN apt-get update -y && apt-get install -y \
 # Qemu
 	qemu-kvm \
 	ovmf \
+# TPM simulator for test
+	swtpm \
 # Bootable medium
 	util-linux \
 	btrfs-progs \
