@@ -88,6 +88,10 @@ RUN apt-get update -y && apt-get install -y \
 # Yocto requirements
 	python3-distutils-extra
 
+# downgrade of coreutils due to cp errors on nfs acl, remove if > v9.8 is included
+RUN echo "deb http://deb.debian.org/debian/ bookworm main" >> /etc/apt/sources.list
+RUN apt-get update -y && apt-get install -y --allow-downgrades coreutils=9.1-1
+
 # protobuf-c-text library
 ADD https://github.com/gyroidos/external_protobuf-c-text/archive/refs/heads/master.zip /opt/external_protobuf-c-text-master.zip
 
