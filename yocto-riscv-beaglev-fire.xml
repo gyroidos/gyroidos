@@ -5,7 +5,7 @@
 
   <!-- ADDITIONAL REMOTES -->
   <remote  name="polarfire"
-    revision="2024.09"
+    revision="2025.03"
     fetch="https://github.com/polarfire-soc"/>
 
   <!-- TARGET SPECIFICS -->
