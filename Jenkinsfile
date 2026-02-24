@@ -203,6 +203,11 @@ pipeline {
 											echo "Building gyroidos-core"
 											. gyroidos/build/yocto/init_ws_ids.sh "out-${BUILDTYPE}" "${GYROID_ARCH}" "${GYROID_MACHINE}"
 
+											# init_ws.sh does cd to out-${BUILDTYPE} that is why we use .. here
+											if ! [ -z "${PKI_PATH}" ];then
+												bitbake-layers add-layer ../.manifests/meta-gyroidos-release
+											fi
+
 											bitbake mc:guestos:gyroidos-core
 
 											echo "Building gyroidos-cml"
