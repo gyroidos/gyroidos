@@ -4,6 +4,6 @@
   <include name="gyroidos-base.xml" />
 
   <!-- TARGET SPECIFICS -->
-  <project path="meta-gyroidos-rpi" name="meta-gyroidos-rpi" remote="gyroidos" revision="dd1ca687cb3c9d0e6f8581327a36e47d0343a7c0"/>
-  <project path="meta-raspberrypi" name="meta-raspberrypi" revision="d7544f35756d87834e8b4bf3e3e733c771d380ae"/>
+  <project path="meta-gyroidos-rpi" name="meta-gyroidos-rpi" remote="gyroidos" revision="9ae186b4b99b3225aa91832db08b247d5e120c3b"/>
+  <project path="meta-raspberrypi" name="meta-raspberrypi" revision="2c646d29912dcc873469a57b1c207e1549c5094d"/>
 </manifest>
