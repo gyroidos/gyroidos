@@ -16,21 +16,21 @@
     fetch="https://github.com/"/>
 
   <!--     DEFAULTS    -->
-  <default revision="kirkstone"
+  <default revision="scarthgap"
            remote="yocto"
            sync-j="4" />
 
   <!-- GYROIDOS -->
-  <project path="gyroidos/manifest" name="gyroidos" remote="gyroidos" revision="a02a631aea8cbca8947aee6ceb9ee0604a7cf738"/>
-  <project path="gyroidos/build" name="gyroidos_build" remote="gyroidos"revision="5cd764f221cb6cd4d39f7eea831b552c9993c052">
+  <project path="gyroidos/manifest" name="gyroidos" remote="gyroidos" revision="1c4100c4259ff67a93e43aa26ae7c490dfd238c2"/>
+  <project path="gyroidos/build" name="gyroidos_build" remote="gyroidos" revision="d8a3b45883366e05a7d19075ef699084d33a2b7b">
      <linkfile src="yocto/init_ws_ids.sh" dest="init_ws.sh" />
   </project>
-  <project path="gyroidos/cml" name="cml" remote="gyroidos" revision="c0d878aa072f40bbdb5eb903d110dda6b8b481ae"/>
-  <project path="meta-gyroidos" name="meta-gyroidos" remote="gyroidos" revision="5c9a9638c0c7e646f0d4c198da06f494819b40f1"/>
-  <project path="meta-tmedbg" name="meta-tmedbg" remote="gyroidos" revision="d2a872197125afbc8c5665b8e1e426693663b53c"/>
+  <project path="gyroidos/cml" name="cml" remote="gyroidos" revision="a6e7479807b7898260ebbe898370f9e81b162c15"/>
+  <project path="meta-gyroidos" name="meta-gyroidos" remote="gyroidos" revision="912a4a87e9cf95ee3e75761962239e6df722fb8f"/>
+  <project path="meta-tmedbg" name="meta-tmedbg" remote="gyroidos" revision="c2aa0ac514686af5157fc28a5b12aced28fc7452"/>
 
   <!-- YOCTO UTILITIES/FEATURES -->
-  <project path="poky" name="poky" revision="975fa4831521d56a7e782b6cd0140d14a0f41b99"/>
-  <project path="meta-openembedded" name="meta-openembedded" remote="oe" revision="de8681b4a2a101b99dd2c48d89a7de2ccd9a961f"/>
-  <project path="meta-virtualization" name="meta-virtualization" revision="b5a1645250c17fb657b7f10166f1c665ce192aaf"/>
+  <project path="poky" name="poky" revision="1d54d1c4736a114e1cecbe85a0306e3814d5ce70"/>
+  <project path="meta-openembedded" name="meta-openembedded" remote="oe" revision="ec0469748be4159fb83fb0fa0148d786484c88cf"/>
+  <project path="meta-virtualization" name="meta-virtualization" revision="78abd77b8695705e6e55266745c838bb665486de"/>
 </manifest>
