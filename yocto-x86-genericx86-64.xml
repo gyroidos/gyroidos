@@ -4,5 +4,5 @@
   <include name="gyroidos-base.xml" />
 
   <!-- TARGET SPECIFICS -->
-  <project path="meta-gyroidos-intel" name="meta-gyroidos-intel" remote="gyroidos" revision="fe05367244b43975988e6b00bc10f0da65003ff7"/>
+  <project path="meta-gyroidos-intel" name="meta-gyroidos-intel" remote="gyroidos" revision="645831d0fa9385a178579f0a2bc379be459f17cf"/>
 </manifest>
