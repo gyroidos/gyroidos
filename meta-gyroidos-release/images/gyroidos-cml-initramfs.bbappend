@@ -1,1 +1,1 @@
-include gyroidos-relese.inc
+include gyroidos-release-motd.inc
