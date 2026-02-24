@@ -185,7 +185,7 @@ pipeline {
 
 												ls -al /yocto_mirror
 
-												ln -s /yocto_mirror/gyroidos_release_pki "${WORKSPACE}/out-${BUILDTYPE}/test_certificates"
+												ln -s ${PKI_PATH} "${WORKSPACE}/out-${BUILDTYPE}/test_certificates"
 
 												ls -al "${WORKSPACE}/out-${BUILDTYPE}/test_certificates"
 
