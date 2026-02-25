@@ -230,6 +230,7 @@ pipeline {
 												echo "Test ssh agent"
 												cat /home/builder/.ssh/ci_known_hosts
 												cat /home/builder/.ssh/config
+												sleep $((RANDOM % 2)).$((RANDOM));
 												ssh -v ${env.MIRRORHOST} "ls -al /yocto_mirror"
 											"""
 										}
