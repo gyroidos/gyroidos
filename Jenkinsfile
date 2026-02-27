@@ -14,6 +14,7 @@ pipeline {
 
 	parameters {
 		string(name: 'CI_LIB_VERSION', defaultValue: 'main', description: 'Version of the gyroidos_ci_common library to be used (e.g. main or pull/<pr_num>/merge)')
+		booleanParam(name: 'RELEASE_BUILD', defaultValue: false, description: 'If true, only build release images and skip tasks required for PR builds')
 		string(name: 'LABEL_BUILDER', defaultValue: 'worker', description: 'Builder preference')
 		string(name: 'LABEL_TESTER', defaultValue: 'tester', description: 'Tester preference')
 		choice(name: 'GYROID_ARCH', choices: ['x86', 'arm32', 'arm64', 'riscv'], description: 'GyroidOS Target Architecture')
@@ -82,7 +83,10 @@ pipeline {
 				stage('Source Tests') {
 					when {
 						expression {
-							if (!fileExists("gyroidos/cml")) {
+							if (params.RELEASE_BUILD) {
+								echo "Skipping source tests during release build"
+								return false
+							} else if (!fileExists("gyroidos/cml")) {
 								echo "CML sources not available, skipping initial tests"
 								return false
 							} else {
@@ -165,6 +169,21 @@ pipeline {
 
 				stages {
 					stage('Build image') {
+						// replace workaround by defining axis depending on params.RELEASE_BUILD,
+						// see https://github.com/jenkinsci/pipeline-model-definition-plugin/pull/1495
+						when {
+							expression {
+								if  (params.RELEASE_BUILD && BUILDTYPE != "dev" &&  BUILDTYPE != "production") {
+									echo "Skipping image '${BUILDTYPE}' during release build"
+									return false
+								} else {
+									return true
+								}
+							}
+						}
+
+
+
 						steps {
 							echo "Running on node $NODE_NAME"
 
@@ -277,6 +296,17 @@ pipeline {
 
 
 		stage('Integration Tests') {
+			when {
+				expression {
+					if (params.RELEASE_BUILD) {
+						echo "Skipping integration tests during release build"
+						return false
+					} else {
+						return true
+					}
+				}
+			}
+
 			matrix {
 				axes {
 					axis {
@@ -323,6 +353,17 @@ pipeline {
 		} // stage 'Integration Tests'
 
 		stage('Token Tests (SCHSM)') {
+			when {
+				expression {
+					if (params.RELEASE_BUILD) {
+						echo "Skipping token tests during release build"
+						return false
+					} else {
+						return true
+					}
+				}
+			}
+
 			agent {
 				node {
 					label "tokentest"
@@ -348,6 +389,17 @@ pipeline {
 		} // stage 'Token Tests'
 
 		stage('Token Tests (BNSE)') {
+			when {
+				expression {
+					if (params.RELEASE_BUILD) {
+						echo "Skipping token tests during release build"
+						return false
+					} else {
+						return true
+					}
+				}
+			}
+
 			agent {
 				node {
 					label "tokentest"
