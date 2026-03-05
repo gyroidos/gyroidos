@@ -197,6 +197,9 @@ pipeline {
 								docker_image.inside(run_args) {
 									def doBuild = {
 										env.PKI_PASSWD = params.PKI_PASSWD
+										if (params.RELEASE_BUILD) {
+											env.BUILD_ADDITIONAL_GUESTOSES = "y"
+										}
 
 										sh label: 'Perform Yocto build', script: """
 											if ! [ -z "${PKI_PATH}" ];then
@@ -228,6 +231,14 @@ pipeline {
 											fi
 
 											bitbake mc:guestos:gyroidos-core
+
+											if [ "y" = "\$BUILD_ADDITIONAL_GUESTOSES" ];then
+												echo "Building debos"
+												bitbake mc:guestos:deb
+
+												echo "Building docker-convertos"
+												bitbake mc:guestos:docker-convert
+											fi
 
 											echo "Building gyroidos-cml"
 											bitbake gyroidos-cml
