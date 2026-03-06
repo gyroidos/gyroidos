@@ -157,7 +157,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-						values 'dev', 'production', 'ccmode', 'schsm', 'bnse', 'asan'
+						values 'dev', 'production', 'ccmode', 'asan'
 					}
 				}
 
@@ -351,6 +351,7 @@ pipeline {
 										test_mode: "${"asan" == BUILDTYPE ? "dev" : BUILDTYPE}",
 										selector: buildParameter('BUILDSELECTOR'),
 										stage_name: STAGE_NAME,
+										hsm_type: "",
 										hsm_serial: "",
 										hsm_vid: "",
 										hsm_pid: "",
@@ -363,7 +364,7 @@ pipeline {
 			} // matrix
 		} // stage 'Integration Tests'
 
-		stage('Token Tests (SCHSM)') {
+		stage('Token Tests') {
 			when {
 				expression {
 					if (params.RELEASE_BUILD) {
@@ -375,64 +376,43 @@ pipeline {
 				}
 			}
 
-			agent {
-				node {
-					label "tokentest"
-				}
-			}
-
-			steps {
-				echo "Running on node $NODE_NAME"
-
-				stepIntegrationTest(workspace: "${WORKSPACE}",
-					manifest_path: "${WORKSPACE}/.manifests",
-					source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
-					gyroid_machine: GYROID_MACHINE,
-					buildtype: "schsm",
-					test_mode: "ccmode",
-					selector: buildParameter('BUILDSELECTOR'),
-					stage_name: STAGE_NAME,
-					hsm_serial: "${env.SCHSM_SERIAL}",
-					hsm_vid: "${env.SCHSM_VID}",
-					hsm_pid: "${env.SCHSM_PID}",
-					hsm_pin: "${env.PHYSHSM_PIN}")
-			}
-		} // stage 'Token Tests'
-
-		stage('Token Tests (BNSE)') {
-			when {
-				expression {
-					if (params.RELEASE_BUILD) {
-						echo "Skipping token tests during release build"
-						return false
-					} else {
-						return true
+			matrix {
+				axes {
+					axis {
+						name 'TOKENTYPE'
+						values 'schsm', 'bnse'
 					}
 				}
-			}
 
-			agent {
-				node {
-					label "tokentest"
+				agent {
+					node {
+						label "tokentest"
+					}
 				}
-			}
 
-			steps {
-				stepIntegrationTest(workspace: "${WORKSPACE}",
-					manifest_path: "${WORKSPACE}/.manifests",
-					source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
-					gyroid_machine: GYROID_MACHINE,
-					buildtype: "bnse",
-					test_mode: "ccmode",
-					selector: buildParameter('BUILDSELECTOR'),
-					stage_name: STAGE_NAME,
-					hsm_serial: "${env.BNSE_SERIAL}",
-					hsm_vid: "${env.BNSE_VID}",
-					hsm_pid: "${env.BNSE_PID}",
-					hsm_pin: "${env.PHYSHSM_PIN}")
-			}
+				stages {
+					stage('Perform tests') {
+						steps {
+							stepIntegrationTest(
+								workspace: "${WORKSPACE}",
+								manifest_path: "${WORKSPACE}/.manifests",
+								source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
+								gyroid_machine: GYROID_MACHINE,
+								buildtype: "ccmode",
+								test_mode: "ccmode",
+								selector: buildParameter('BUILDSELECTOR'),
+								stage_name: STAGE_NAME,
+								hsm_type: "${TOKENTYPE}",
+								hsm_serial: "${"bnse" == TOKENTYPE ? env.BNSE_SERIAL : env.SCHSM_SERIAL}",
+								hsm_vid: "${"bnse" == TOKENTYPE ? env.BNSE_VID : env.SCHSM_VID}",
+								hsm_pid: "${"bnse" == TOKENTYPE ? env.BNSE_PID : env.SCHSM_PID}",
+								hsm_pin: "${env.PHYSHSM_PIN}"
+							)
+						} // steps
+					} // stage 'Perform tests'
+				} // stages
+			} // matrix
 		} // stage 'Token Tests'
-
 
 		/*TODO deploy the development and production images on separate machines
 		  and start demo applications inside them (e.g. a webserver)*/
