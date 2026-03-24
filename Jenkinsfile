@@ -157,7 +157,7 @@ pipeline {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-						values 'dev', 'production', 'ccmode', 'schsm', 'bnse', 'asan'
+						values 'dev', 'production', 'ccmode', 'asan'
 					}
 				}
 
@@ -316,6 +316,7 @@ pipeline {
 										test_mode: "${"asan" == BUILDTYPE ? "dev" : BUILDTYPE}",
 										selector: buildParameter('BUILDSELECTOR'),
 										stage_name: STAGE_NAME,
+										hsm_type: "",
 										hsm_serial: "",
 										hsm_vid: "",
 										hsm_pid: "",
@@ -353,10 +354,11 @@ pipeline {
 					manifest_path: "${WORKSPACE}/.manifests",
 					source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
 					gyroid_machine: GYROID_MACHINE,
-					buildtype: "schsm",
+					buildtype: "ccmode",
 					test_mode: "ccmode",
 					selector: buildParameter('BUILDSELECTOR'),
 					stage_name: STAGE_NAME,
+					hsm_type: "schsm",
 					hsm_serial: "${env.SCHSM_SERIAL}",
 					hsm_vid: "${env.SCHSM_VID}",
 					hsm_pid: "${env.SCHSM_PID}",
@@ -387,10 +389,11 @@ pipeline {
 					manifest_path: "${WORKSPACE}/.manifests",
 					source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
 					gyroid_machine: GYROID_MACHINE,
-					buildtype: "bnse",
+					buildtype: "ccmode",
 					test_mode: "ccmode",
 					selector: buildParameter('BUILDSELECTOR'),
 					stage_name: STAGE_NAME,
+					hsm_type: "bnse",
 					hsm_serial: "${env.BNSE_SERIAL}",
 					hsm_vid: "${env.BNSE_VID}",
 					hsm_pid: "${env.BNSE_PID}",
