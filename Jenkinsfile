@@ -191,7 +191,6 @@ pipeline {
 								def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
 
 								def run_args = '''--user ${BUILDUSER} -v /${YOCTO_MIRROR_DIR}/:/yocto_mirror --env NODE_NAME="${NODE_NAME}"
-												-v /home/${NODE_JENKINS_USER}/.ssh/known_hosts:/home/builder/.ssh/ci_known_hosts
 												--tmpfs /ext_tmpfs'''
 
 								docker_image.inside(run_args) {
@@ -250,53 +249,19 @@ pipeline {
 										"""
 									}
 
-									if ("y" == SYNC_MIRRORS) {
-										sh label: 'Prepare .ssh/config', script: '''
-											echo "Preparing .ssh/config for mirror sync"
-											echo "UserKnownHostsFile /home/builder/.ssh/ci_known_hosts" >> /home/builder/.ssh/config'''
-
-										sshagent(credentials: ['MIRROR']) {
-											sh label: 'sshtest', script: """
-												echo "Test ssh agent"
-												cat /home/builder/.ssh/ci_known_hosts
-												cat /home/builder/.ssh/config
-												sleep \$((RANDOM % 2)).\$((RANDOM))
-												ssh -v ${env.MIRRORHOST} "ls -al /yocto_mirror"
-											"""
-										}
-
-										sshagent(credentials: ['MIRROR']) {
-											stepBuildImage(workspace: WORKSPACE,
-												manifest_path: "${WORKSPACE}/.manifests",
-												manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
-												mirror_base_path: "/yocto_mirror",
-												yocto_version: YOCTO_VERSION,
-												gyroid_arch: GYROID_ARCH,
-												gyroid_machine: GYROID_MACHINE,
-												buildtype: BUILDTYPE,
-												selector: buildParameter('BUILDSELECTOR'),
-												sync_mirrors: SYNC_MIRRORS,
-												rebuild_previous: REBUILD_PREVIOUS,
-												buildSteps: doBuild
-												)
-										}
-									} else {
-										echo "won't sync mirrors"
-
-										stepBuildImage(workspace: WORKSPACE,
-											manifest_path: "${WORKSPACE}/.manifests",
-											manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
-											mirror_base_path: "/yocto_mirror",
-											yocto_version: YOCTO_VERSION,
-											gyroid_arch: GYROID_ARCH,
-											gyroid_machine: GYROID_MACHINE,
-											buildtype: BUILDTYPE,
-											selector: buildParameter('BUILDSELECTOR'),
-											sync_mirrors: SYNC_MIRRORS,
-											rebuild_previous: REBUILD_PREVIOUS,
-											buildSteps: doBuild
-										)
-									}
+									stepBuildImage(workspace: WORKSPACE,
+										manifest_path: "${WORKSPACE}/.manifests",
+										manifest_name: "yocto-${GYROID_ARCH}-${GYROID_MACHINE}.xml",
+										mirror_base_path: "/yocto_mirror",
+										yocto_version: YOCTO_VERSION,
+										gyroid_arch: GYROID_ARCH,
+										gyroid_machine: GYROID_MACHINE,
+										buildtype: BUILDTYPE,
+										selector: buildParameter('BUILDSELECTOR'),
+										sync_mirrors: SYNC_MIRRORS,
+										rebuild_previous: REBUILD_PREVIOUS,
+										buildSteps: doBuild
+									)
 								}
 							}
 						} // steps
