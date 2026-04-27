@@ -283,64 +283,73 @@ pipeline {
 			} // matrix
 		} // stage 'Build + Test Images'
 
-
-		stage('Integration Tests') {
-			when {
-				expression {
-					if (params.RELEASE_BUILD) {
-						echo "Skipping integration tests during release build"
-						return false
-					} else {
-						return true
-					}
-				}
-			}
-
+		stage('Test and Sync') {
 			matrix {
 				axes {
 					axis {
 						name 'BUILDTYPE'
-						values 'dev', 'production', 'ccmode', 'asan'
+						values 'dev', 'production', 'ccmode', 'asan', 'mirror-sync'
 					}
 				}
-
-
 				agent {
 					node {
-						label "${LABEL_TESTER}"
+						// mirror-sync uses BUILDER label, others use TESTER label
+						label "${BUILDTYPE == 'mirror-sync' ? LABEL_BUILDER : LABEL_TESTER}"
 					}
 				}
-
 				stages {
-					stage('Perform tests') {
+					stage('Run') {
+						when {
+							beforeAgent true
+							anyOf {
+								// mirror-sync only when SYNC_MIRRORS == 'y'
+								allOf {
+									expression { BUILDTYPE == 'mirror-sync' }
+									environment name: 'SYNC_MIRRORS', value: 'y'
+								}
+								// integration tests only when not a release build
+								allOf {
+									expression { BUILDTYPE != 'mirror-sync' }
+									expression { !params.RELEASE_BUILD }
+								}
+							}
+						}
 						steps {
-							echo "Running on node $NODE_NAME"
-
 							script {
-								def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
-								def run_args = "--user ${BUILDUSER} --device=/dev/kvm -p 2222 -p 5901 --env NODE_NAME=${NODE_NAME} --env KVM_GID=${env.KVM_GID}"
+								if (BUILDTYPE == 'mirror-sync') {
+									catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+										// Trigger the ssh beyblade sync
+										sh "ssh -o StrictHostKeyChecking=accept-new root@localhost"
+									}
+								} else {
+									echo "Running on node $NODE_NAME"
 
-								docker_image.inside(run_args) {
-									stepIntegrationTest(workspace: "${WORKSPACE}",
-										manifest_path: "${WORKSPACE}/.manifests",
-										source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
-										gyroid_machine: GYROID_MACHINE,
-										buildtype: "${BUILDTYPE}",
-										test_mode: "${"asan" == BUILDTYPE ? "dev" : BUILDTYPE}",
-										selector: buildParameter('BUILDSELECTOR'),
-										stage_name: STAGE_NAME,
-										hsm_serial: "",
-										hsm_vid: "",
-										hsm_pid: "",
-										hsm_pin: "")
+									def docker_image = docker.build("debian_jenkins_${BUILDUSER}_${KVM_GID}", "--build-arg=BUILDUSER=$BUILDUSER --build-arg=KVM_GID=${KVM_GID} ${WORKSPACE}/.manifests")
+									def run_args = "--user ${BUILDUSER} --device=/dev/kvm -p 2222 -p 5901 --env NODE_NAME=${NODE_NAME} --env KVM_GID=${env.KVM_GID}"
+
+									docker_image.inside(run_args) {
+										stepIntegrationTest(workspace: "${WORKSPACE}",
+											manifest_path: "${WORKSPACE}/.manifests",
+											source_tarball: "sources-${GYROID_ARCH}-${GYROID_MACHINE}.tar",
+											gyroid_machine: GYROID_MACHINE,
+											buildtype: "${BUILDTYPE}",
+											test_mode: "${"asan" == BUILDTYPE ? "dev" : BUILDTYPE}",
+											selector: buildParameter('BUILDSELECTOR'),
+											stage_name: STAGE_NAME,
+											hsm_serial: "",
+											hsm_vid: "",
+											hsm_pid: "",
+											hsm_pin: "")
+									}
 								}
 							}
 						} // steps
 						post { cleanup { script { doCleanup() } } }
-					} // stage 'Perform tests'
+					} // stage 'Run'
 				} // stages
 			} // matrix
-		} // stage 'Integration Tests'
+		} // stage 'Test and Sync'
+
 
 		stage('Token Tests (SCHSM)') {
 			when {
