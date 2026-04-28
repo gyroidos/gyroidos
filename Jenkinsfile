@@ -1,3 +1,14 @@
+def doCleanup = {
+	if (params.SKIP_WS_CLEANUP) {
+		echo "Skipping workspace cleanup on ${env.NODE_NAME} as requested"
+	} else {
+		echo "Cleaning workspace on ${env.NODE_NAME}"
+		cleanWs cleanWhenAborted: true, cleanWhenFailure: true,
+				cleanWhenNotBuilt: true, cleanWhenUnstable: true,
+				notFailBuild: true
+	}
+}
+
 pipeline {
 	agent any
 
@@ -147,6 +158,7 @@ pipeline {
 					}
 				}
 			}
+			post { cleanup { script { doCleanup() } } }
 		} // Source checks + unit tests
 
 
@@ -265,6 +277,7 @@ pipeline {
 								}
 							}
 						} // steps
+						post { cleanup { script { doCleanup() } } }
 					} //stage
 				} // stages
 			} // matrix
@@ -323,6 +336,7 @@ pipeline {
 								}
 							}
 						} // steps
+						post { cleanup { script { doCleanup() } } }
 					} // stage 'Perform tests'
 				} // stages
 			} // matrix
@@ -362,6 +376,7 @@ pipeline {
 					hsm_pid: "${env.SCHSM_PID}",
 					hsm_pin: "${env.PHYSHSM_PIN}")
 			}
+			post { cleanup { script { doCleanup() } } }
 		} // stage 'Token Tests'
 
 		stage('Token Tests (BNSE)') {
@@ -396,6 +411,7 @@ pipeline {
 					hsm_pid: "${env.BNSE_PID}",
 					hsm_pin: "${env.PHYSHSM_PIN}")
 			}
+			post { cleanup { script { doCleanup() } } }
 		} // stage 'Token Tests'
 
 
@@ -447,19 +463,6 @@ pipeline {
 			}
 		} // stage 'Documentation Generation'
 	} // stages
-
-	post {
-		always {
-			script {
-				if (params.SKIP_WS_CLEANUP) {
-					echo "Skipping workspace cleanup as requested"
-					cleanWs cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenUnstable: true, notFailBuild: true
-				} else {
-					echo "Cleaning workspace"
-					cleanWs cleanWhenAborted: true, cleanWhenFailure: true, cleanWhenNotBuilt: true, cleanWhenUnstable: true, notFailBuild: true
-				}
-			}
-		}
-	}
+	post { cleanup { script { doCleanup() } } }
 } // pipeline
 // vim: ts=4
