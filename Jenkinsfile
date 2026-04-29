@@ -36,7 +36,7 @@ pipeline {
 		stage('Source checks + unit tests') {
 			agent {
 				node {
-					label "${LABEL_BUILDER}"
+					label "${params.LABEL_BUILDER}"
 				}
 			}
 
@@ -163,7 +163,7 @@ pipeline {
 
 				agent {
 					node {
-						label "${LABEL_BUILDER}"
+						label "${params.LABEL_BUILDER}"
 					}
 				}
 
@@ -294,7 +294,7 @@ pipeline {
 
 				agent {
 					node {
-						label "${LABEL_TESTER}"
+						label "${params.LABEL_TESTER}"
 					}
 				}
 
