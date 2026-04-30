@@ -201,6 +201,7 @@ pipeline {
 										}
 
 										sh label: 'Perform Yocto build', script: """
+											set -eu
 											if ! [ -z "${PKI_PATH}" ];then
 												echo "Using PKI at ${PKI_PATH}"
 
