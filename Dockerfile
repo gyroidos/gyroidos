@@ -84,11 +84,6 @@ RUN apt-get update && apt-get install -yyq --no-install-recommends \
 	python3-distutils-extra \
 	&& rm -rf /var/lib/apt/lists/*
 
-# downgrade of coreutils due to cp errors on nfs acl, remove if > v9.8 is included
-RUN echo "deb http://deb.debian.org/debian/ bookworm main" >> /etc/apt/sources.list \
-	&& apt-get update -y && apt-get install -y --no-install-recommends --allow-downgrades coreutils=9.1-1 \
-	&& rm -rf /var/lib/apt/lists/*
-
 # protobuf-c-text library
 ADD https://github.com/gyroidos/external_protobuf-c-text/archive/refs/heads/master.zip /opt/external_protobuf-c-text-master.zip
 RUN cd /opt && unzip external_protobuf-c-text-master.zip \
