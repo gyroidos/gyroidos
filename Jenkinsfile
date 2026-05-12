@@ -63,8 +63,6 @@ if (startIdx > 0) {
 	node(params.LABEL_TESTER ?: 'tester') {
 		timeout(time: 30, unit: 'MINUTES') {
 		try {
-			echo "Running on node $NODE_NAME"
-
 			dir('.manifests') {
 				checkout scm
 			}
@@ -109,14 +107,12 @@ if (startIdx > 0) {
 
 			parallel(
 					'Code Format & Style': {
-						echo "Running on node $NODE_NAME"
 						docker_env.image.inside("--user ${docker_env.builduser} --env NODE_NAME=${NODE_NAME}") {
 							stepFormatCheck(workspace: WORKSPACE,
 								sourcedir: "${WORKSPACE}/gyroidos/cml")
 						}
 					},
 					'Unit tests': {
-						echo "Running on node $NODE_NAME"
 						docker_env.image.inside("--user ${docker_env.builduser} --env NODE_NAME=${NODE_NAME}") {
 							stepUnitTests(workspace: WORKSPACE,
 								sourcedir: "${WORKSPACE}/gyroidos/cml")
@@ -133,133 +129,162 @@ if (startIdx > 0) {
 } // stage('Source checks + unit tests')
 
 
-stage('Build Images') {
-if (startIdx > 1) {
-	echo "Stage skipped (starting from '${params.START_FROM_STAGE}')"
-} else {
-	def buildTypes = ['dev', 'production', 'ccmode', 'hwhsm', 'asan']
-	def builds = [:]
+stage('Build & Test') {
+	def buildTypes = ['asan', 'ccmode', 'dev', 'production', 'hwhsm']
+	def testModes = [asan: 'dev']
+	def hsmEnvs = [
+		schsm: { -> [serial: env.SCHSM_SERIAL, vid: env.SCHSM_VID, pid: env.SCHSM_PID, pin: env.PHYSHSM_PIN] },
+		bnse:  { -> [serial: env.BNSE_SERIAL,  vid: env.BNSE_VID,  pid: env.BNSE_PID,  pin: env.PHYSHSM_PIN] },
+	]
+	def branches = [:]
+	def completedBuilds = java.util.Collections.synchronizedMap(new java.util.HashMap())
 
-	buildTypes.each { buildtype ->
-		if (params.RELEASE_BUILD && buildtype != "dev" && buildtype != "production") {
-			echo "Skipping image '${buildtype}' during release build"
-			return
-		}
-
-		builds["Build ${buildtype}"] = {
-			node(params.LABEL_BUILDER ?: 'worker') {
-				timeout(time: 180, unit: 'MINUTES') {
-				withEnv(["BUILDTYPE=${buildtype}"]) {
-				try {
-					echo "Running on node $NODE_NAME"
-
-					dir('.manifests') {
-						checkout scm
-					}
-
-					def docker_env = defineDockerImage()
-
-					def run_args = "--user ${docker_env.builduser} -v /${env.YOCTO_MIRROR_DIR}/:/yocto_mirror --env NODE_NAME=${NODE_NAME}"
-
-					docker_env.image.inside(run_args) {
-						def doBuild = {
-							env.PKI_PASSWD = params.PKI_PASSWD
-							if (params.RELEASE_BUILD) {
-								env.BUILD_ADDITIONAL_GUESTOSES = "y"
-							}
-
-							sh label: 'Perform Yocto build', script: """
-								set -e
-
-								if [ -n "${params.PKI_PATH}" ]; then
-									echo "Using PKI at ${params.PKI_PATH}"
-
-									ln -s ${params.PKI_PATH} "${WORKSPACE}/out-${buildtype}/test_certificates"
-
-									if [ -n "\$PKI_PASSWD" ]; then
-										export KBUILD_SIGN_PIN="\$PKI_PASSWD"
-										export GYROIDOS_TEST_PASSWD_PKI="\$PKI_PASSWD"
-									fi
-								else
-									echo "No PKI specified, new one will be generated"
-								fi
-
-								cd "${WORKSPACE}"
-
-								echo "Building gyroidos-core"
-								. gyroidos/build/yocto/init_ws_ids.sh "out-${buildtype}" "${params.GYROID_ARCH}" "${params.GYROID_MACHINE}"
-								set -e # Yocto unsets -e, re-set it
-
-								# init_ws.sh does cd to out-${buildtype} that is why we use .. here
-								if [ -n "${params.PKI_PATH}" ]; then
-									bitbake-layers add-layer ../.manifests/meta-gyroidos-release
-								fi
-
-								bitbake mc:guestos:gyroidos-core
-
-								if [ "y" = "\$BUILD_ADDITIONAL_GUESTOSES" ]; then
-									echo "Building debos"
-									bitbake mc:guestos:deb
-
-									echo "Building docker-convertos"
-									bitbake mc:guestos:docker-convert
-								fi
-
-								echo "Building gyroidos-cml"
-								bitbake gyroidos-cml
-
-								if [ "y" = "${params.BUILD_INSTALLER}" ]; then
-									echo "Building gyroidos-installer"
-									bitbake multiconfig:installer:gyroidos-installer
-								fi
-							"""
-						}
-
-						stepBuildImage(workspace: WORKSPACE,
-							manifest_path: "${WORKSPACE}/.manifests",
-							manifest_name: "yocto-${params.GYROID_ARCH}-${params.GYROID_MACHINE}.xml",
-							mirror_base_path: "/yocto_mirror",
-							yocto_version: env.YOCTO_VERSION,
-							gyroid_arch: params.GYROID_ARCH,
-							gyroid_machine: params.GYROID_MACHINE,
-							buildtype: buildtype,
-							selector: buildParameter('BUILDSELECTOR'),
-							sync_mirrors: params.SYNC_MIRRORS,
-							rebuild_previous: params.REBUILD_PREVIOUS,
-							buildSteps: doBuild
-						)
-					}
-				} finally {
-					doCleanup()
-				}
-				} // withEnv
-				} // timeout
-			} // node
-		}
+	def activeBuildTypes = buildTypes.findAll { bt ->
+		!(params.RELEASE_BUILD && bt != "dev" && bt != "production")
 	}
 
-	parallel builds
-} // if startIdx
-} // stage('Build Images')
+	// Spawn branches for each of the buildTypes. Each branch completes a build and associated test for the type.
+	// The hwhsm tests consist of both token tests {schsm, bnse} in parallel, they share a common build (hwhsm).
+	activeBuildTypes.each { buildtype ->
+		branches["${buildtype}"] = {
 
+			// --- Build phase (skip when starting from "Integration Tests") ---
+			if (startIdx <= 1) {
+				stage("Build ${buildtype}") {
+				node(params.LABEL_BUILDER ?: 'worker') {
+					timeout(time: 180, unit: 'MINUTES') {
+					withEnv(["BUILDTYPE=${buildtype}"]) {
+					try {
+						dir('.manifests') {
+							checkout scm
+						}
 
-if (!params.RELEASE_BUILD) {
-	stage('Integration Tests') {
-		def testModes = [asan: 'dev']
-		def hsmEnvs = [
-			schsm: { -> [serial: env.SCHSM_SERIAL, vid: env.SCHSM_VID, pid: env.SCHSM_PID, pin: env.PHYSHSM_PIN] },
-			bnse:  { -> [serial: env.BNSE_SERIAL,  vid: env.BNSE_VID,  pid: env.BNSE_PID,  pin: env.PHYSHSM_PIN] },
-		]
-		def tests = [:]
+						def docker_env = defineDockerImage()
 
-		// Regular integration tests (run in Docker on tester nodes)
-		['dev', 'production', 'ccmode', 'asan'].each { testtype ->
-			tests["Test ${testtype}"] = {
+						def run_args = "--user ${docker_env.builduser} -v /${env.YOCTO_MIRROR_DIR}/:/yocto_mirror --env NODE_NAME=${NODE_NAME}"
+
+						docker_env.image.inside(run_args) {
+							def doBuild = {
+								env.PKI_PASSWD = params.PKI_PASSWD
+								if (params.RELEASE_BUILD) {
+									env.BUILD_ADDITIONAL_GUESTOSES = "y"
+								}
+
+								sh label: 'Perform Yocto build', script: """
+									set -e
+
+									if [ -n "${params.PKI_PATH}" ]; then
+										echo "Using PKI at ${params.PKI_PATH}"
+
+										ln -s ${params.PKI_PATH} "${WORKSPACE}/out-${buildtype}/test_certificates"
+
+										if [ -n "\$PKI_PASSWD" ]; then
+											export KBUILD_SIGN_PIN="\$PKI_PASSWD"
+											export GYROIDOS_TEST_PASSWD_PKI="\$PKI_PASSWD"
+										fi
+									else
+										echo "No PKI specified, new one will be generated"
+									fi
+
+									cd "${WORKSPACE}"
+
+									echo "Patching gyroidosgeneric.bbclass for CI multiconfig dependency"
+									cat >> meta-gyroidos/classes/gyroidosgeneric.bbclass <<-'BBPATCH'
+									GYROIDOS_GUESTOS_MCDEPENDS ?= "mc::guestos:gyroidos-core:do_image_complete"
+									do_rootfs[mcdepends] += "\${GYROIDOS_GUESTOS_MCDEPENDS}"
+									BBPATCH
+
+									. gyroidos/build/yocto/init_ws_ids.sh "out-${buildtype}" "${params.GYROID_ARCH}" "${params.GYROID_MACHINE}"
+
+									# init_ws.sh does cd to out-${buildtype} that is why we use .. here
+									if [ -n "${params.PKI_PATH}" ]; then
+										bitbake-layers add-layer ../.manifests/meta-gyroidos-release
+									fi
+
+									TARGETS="mc:guestos:gyroidos-core gyroidos-cml"
+
+									if [ "y" = "\$BUILD_ADDITIONAL_GUESTOSES" ]; then
+										TARGETS="\$TARGETS mc:guestos:deb mc:guestos:docker-convert"
+									fi
+
+									if [ "y" = "${params.BUILD_INSTALLER}" ]; then
+										TARGETS="\$TARGETS multiconfig:installer:gyroidos-installer"
+									fi
+
+									echo "Building targets: \$TARGETS"
+									bitbake \$TARGETS
+								"""
+							}
+
+							stepBuildImage(workspace: WORKSPACE,
+								manifest_path: "${WORKSPACE}/.manifests",
+								manifest_name: "yocto-${params.GYROID_ARCH}-${params.GYROID_MACHINE}.xml",
+								mirror_base_path: "/yocto_mirror",
+								yocto_version: env.YOCTO_VERSION,
+								gyroid_arch: params.GYROID_ARCH,
+								gyroid_machine: params.GYROID_MACHINE,
+								buildtype: buildtype,
+								selector: buildParameter('BUILDSELECTOR'),
+								sync_mirrors: params.SYNC_MIRRORS,
+								rebuild_previous: params.REBUILD_PREVIOUS,
+								buildSteps: doBuild
+							)
+						}
+					} catch (e) {
+						completedBuilds.put(buildtype, e)
+						throw e
+					} finally {
+						completedBuilds.putIfAbsent(buildtype, null)
+						doCleanup()
+					}
+					} // withEnv
+					} // timeout
+				} // node
+				} // stage
+			} else {
+				completedBuilds.put(buildtype, null)
+			}
+
+			// --- Test phase (skip during release builds) ---
+			if (!params.RELEASE_BUILD && buildtype == 'hwhsm') {
+				stage("Test hwhsm") {
+					parallel(['schsm', 'bnse'].collectEntries { testtype ->
+						["Test ${buildtype} [${testtype.toUpperCase()}]": {
+							node(params.LABEL_TOKENTEST ?: 'tokentest') {
+								timeout(time: 60, unit: 'MINUTES') {
+								try {
+									dir('.manifests') {
+										checkout scm
+									}
+
+									def hsm = hsmEnvs[testtype]()
+
+									stepIntegrationTest(workspace: "${WORKSPACE}",
+										manifest_path: "${WORKSPACE}/.manifests",
+										source_tarball: "sources-${params.GYROID_ARCH}-${params.GYROID_MACHINE}.tar",
+										gyroid_machine: params.GYROID_MACHINE,
+										buildtype: testtype,
+										artifact_buildtype: 'hwhsm',
+										test_mode: "ccmode",
+										selector: buildParameter('BUILDSELECTOR'),
+										stage_name: STAGE_NAME,
+										hsm_serial: hsm.serial,
+										hsm_vid: hsm.vid,
+										hsm_pid: hsm.pid,
+										hsm_pin: hsm.pin)
+								} finally {
+									doCleanup()
+								}
+								} // timeout
+							} // node
+						}]
+					})
+				}
+			} else if (!params.RELEASE_BUILD) {
+				stage("Test ${buildtype}") {
 				node(params.LABEL_TESTER ?: 'tester') {
 					timeout(time: 60, unit: 'MINUTES') {
 					try {
-						echo "Running on node $NODE_NAME"
-
 						dir('.manifests') {
 							checkout scm
 						}
@@ -272,8 +297,8 @@ if (!params.RELEASE_BUILD) {
 								manifest_path: "${WORKSPACE}/.manifests",
 								source_tarball: "sources-${params.GYROID_ARCH}-${params.GYROID_MACHINE}.tar",
 								gyroid_machine: params.GYROID_MACHINE,
-								buildtype: testtype,
-								test_mode: testModes[testtype] ?: testtype,
+								buildtype: buildtype,
+								test_mode: testModes[buildtype] ?: buildtype,
 								selector: buildParameter('BUILDSELECTOR'),
 								stage_name: STAGE_NAME,
 								hsm_serial: "",
@@ -286,54 +311,35 @@ if (!params.RELEASE_BUILD) {
 					}
 					} // timeout
 				} // node
+				} // stage
 			}
 		}
+	}
 
-		// Token tests (run directly on tokentest nodes, no Docker)
-		['schsm', 'bnse'].each { testtype ->
-			tests["Token test ${testtype.toUpperCase()}"] = {
-				node(params.LABEL_TOKENTEST ?: 'tokentest') {
-					timeout(time: 60, unit: 'MINUTES') {
-					try {
-						echo "Running on node $NODE_NAME"
-
-						dir('.manifests') {
-							checkout scm
-						}
-
-						def hsm = hsmEnvs[testtype]()
-
-						stepIntegrationTest(workspace: "${WORKSPACE}",
-							manifest_path: "${WORKSPACE}/.manifests",
-							source_tarball: "sources-${params.GYROID_ARCH}-${params.GYROID_MACHINE}.tar",
-							gyroid_machine: params.GYROID_MACHINE,
-							buildtype: testtype,
-							artifact_buildtype: 'hwhsm',
-							test_mode: "ccmode",
-							selector: buildParameter('BUILDSELECTOR'),
-							stage_name: STAGE_NAME,
-							hsm_serial: hsm.serial,
-							hsm_vid: hsm.vid,
-							hsm_pid: hsm.pid,
-							hsm_pin: hsm.pin)
-					} finally {
-						doCleanup()
+	if (params.SYNC_MIRRORS == 'y' && startIdx <= 1) {
+		parallel(
+			'Builds and Tests': {
+				parallel branches
+			},
+			'SSH Mirror Sync': {
+				def allBuildsOk = true
+				stage("Waiting for Builds") {
+					waitUntil(initialRecurrencePeriod: 1000, quiet: true) {
+						completedBuilds.keySet().containsAll(activeBuildTypes)
 					}
-					} // timeout
-				} // node
-			}
-		}
+					if (completedBuilds.any { k, v -> v != null }) {
+						echo "Not all builds succeeded, skipping mirror sync"
+						allBuildsOk = false
+					}
+				}
 
-		// Mirror sync
-		if (params.SYNC_MIRRORS == 'y') {
-			tests["SSH Mirror Sync"] = {
+				if (allBuildsOk) {
+				stage("Sync Mirror") {
 				node(params.LABEL_BUILDER ?: 'worker') {
 					timeout(time: 60, unit: 'MINUTES') {
 					try {
-						echo "Running on node $NODE_NAME"
 						lock('mirror-sync') {
 							catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-								// Trigger the ssh beyblade sync
 								sh "ssh -o StrictHostKeyChecking=accept-new root@localhost"
 							}
 						}
@@ -342,12 +348,14 @@ if (!params.RELEASE_BUILD) {
 					}
 					} // timeout
 				} // node
+				} // stage
+				} // if allBuildsOk
 			}
-		}
-
-		parallel tests
-	} // stage('Integration Tests')
-} // if (!params.RELEASE_BUILD)
+		)
+	} else {
+		parallel branches
+	}
+} // stage('Build & Test')
 
 
 /*TODO deploy the development and production images on separate machines
