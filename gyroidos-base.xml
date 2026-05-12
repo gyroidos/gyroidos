@@ -10,7 +10,7 @@
 	  fetch="https://git.yoctoproject.org/git/"/>
 
   <remote  name="oe"
-    fetch="git://git.openembedded.org/"/>
+    fetch="https://github.com/openembedded/"/>
 
   <remote  name="github"
     fetch="https://github.com/"/>
