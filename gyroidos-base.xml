@@ -7,7 +7,7 @@
     fetch="https://github.com/gyroidos/"/>
 
   <remote  name="yocto"
-	  fetch="https://git.yoctoproject.org/git/"/>
+	  fetch="https://git.yoctoproject.org/"/>
 
   <remote  name="oe"
     fetch="https://github.com/openembedded/"/>
