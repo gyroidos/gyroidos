@@ -188,6 +188,7 @@ if (startIdx > 1) {
 
 								echo "Building gyroidos-core"
 								. gyroidos/build/yocto/init_ws_ids.sh "out-${buildtype}" "${params.GYROID_ARCH}" "${params.GYROID_MACHINE}"
+								set -e # Yocto unsets -e, re-set it
 
 								# init_ws.sh does cd to out-${buildtype} that is why we use .. here
 								if [ -n "${params.PKI_PATH}" ]; then
