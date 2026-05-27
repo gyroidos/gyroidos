@@ -272,7 +272,7 @@ stage('Build & Test') {
 										manifest_path: "${WORKSPACE}/.manifests",
 										source_tarball: "sources-${params.GYROID_ARCH}-${params.GYROID_MACHINE}.tar",
 										gyroid_machine: params.GYROID_MACHINE,
-										buildtype: testtype,
+										buildtype: "hwhsm-${testtype}",
 										artifact_buildtype: 'hwhsm',
 										test_mode: "ccmode",
 										selector: buildParameter('BUILDSELECTOR'),
