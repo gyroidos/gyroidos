@@ -204,10 +204,19 @@ stage('Build & Test') {
 									TARGETS="mc:guestos:gyroidos-core gyroidos-cml"
 
 									if [ "y" = "\$BUILD_ADDITIONAL_GUESTOSES" ]; then
+										echo "Patching gyroidosgeneric.bbclass for additional guestos multiconfig dependencies"
+										cat >> ../meta-gyroidos/classes/gyroidosgeneric.bbclass <<-'BBPATCH'
+										GYROIDOS_GUESTOS_MCDEPENDS += "mc::guestos:deb:do_image_complete mc::guestos:docker-convert:do_image_complete"
+										BBPATCH
 										TARGETS="\$TARGETS mc:guestos:deb mc:guestos:docker-convert"
 									fi
 
 									if [ "y" = "${params.BUILD_INSTALLER}" ]; then
+										echo "Patching gyroidos-installer.bb for CI multiconfig dependency on gyroidos-cml"
+										cat >> ../meta-gyroidos-intel/images/gyroidos-installer.bb <<-'BBPATCH'
+										GYROIDOS_CML_MCDEPENDS ?= "mc:installer::gyroidos-cml:do_image_complete"
+										do_rootfs[mcdepends] += "\${GYROIDOS_CML_MCDEPENDS}"
+										BBPATCH
 										TARGETS="\$TARGETS multiconfig:installer:gyroidos-installer"
 									fi
 
