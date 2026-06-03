@@ -199,6 +199,18 @@ stage('Build & Test') {
 									# init_ws.sh does cd to out-${buildtype} that is why we use .. here
 									if [ -n "${params.PKI_PATH}" ]; then
 										bitbake-layers add-layer ../.manifests/meta-gyroidos-release
+									else
+										# Pre-generate test PKI in the pipeline to avoid a multiconfig race:
+										# pki-native:do_compile is scheduled once per multiconfig (default and
+										# mc:guestos) and both write to \${TOPDIR}/test_certificates. The recipe's
+										# .generating sentinel lets the second instance "succeed" while the first
+										# is still mid-flight, which unblocks downstream tasks (e.g.
+										# qoriq-cst-native:do_install copying ssig_subca.key) before the keys
+										# exist on disk.
+										if [ ! -d test_certificates ]; then
+											echo "Pre-generating test PKI to avoid pki-native multiconfig race"
+											bash ../gyroidos/build/device_provisioning/gen_dev_certs.sh "\$(pwd)/test_certificates"
+										fi
 									fi
 
 									TARGETS="mc:guestos:gyroidos-core gyroidos-cml"
