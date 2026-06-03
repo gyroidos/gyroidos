@@ -169,6 +169,10 @@ stage('Build & Test') {
 								if (params.RELEASE_BUILD) {
 									env.BUILD_ADDITIONAL_GUESTOSES = "y"
 								}
+								// Route kernel and cml-boot output to QEMU's first serial port for
+								// non-release CI builds. Skipped for RELEASE_BUILD so deployable
+								// images keep their normal console configuration.
+								env.CI_DEBUG_CONSOLE = params.RELEASE_BUILD ? "" : "y"
 
 								sh label: 'Perform Yocto build', script: """
 									set -e
@@ -199,6 +203,20 @@ stage('Build & Test') {
 									# init_ws.sh does cd to out-${buildtype} that is why we use .. here
 									if [ -n "${params.PKI_PATH}" ]; then
 										bitbake-layers add-layer ../.manifests/meta-gyroidos-release
+									fi
+
+									if [ "y" = "\$CI_DEBUG_CONSOLE" ]; then
+										# CI-only: redirect kernel boot and cml-boot output to ttyS0 so
+										# the qemu -serial capture in VM-management.sh contains something
+										# useful when an integration test VM hangs before sshd is up.
+										# ignore_loglevel keeps messages flowing past the printk gag in
+										# 20-setup.fragment; LOGTTY=console follows whichever console the
+										# kernel cmdline pins as primary (ttyS0 here). Non-x86 targets
+										# simply ignore the unknown ttyS0 console.
+										echo "CI debug console enabled: routing kernel + userspace to ttyS0"
+										sed -i 's|^CONFIG_CMDLINE=.*|CONFIG_CMDLINE="audit=1 console=ttyS0,115200 ignore_loglevel"|' \\
+											../meta-gyroidos/recipes-kernel/linux/generic/gyroidos.cfg
+										echo 'GYROIDOS_LOGTTY = "console"' >> conf/local.conf
 									fi
 
 									TARGETS="mc:guestos:gyroidos-core gyroidos-cml"
