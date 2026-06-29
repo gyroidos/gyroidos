@@ -30,7 +30,9 @@
   <project path="meta-tmedbg" name="meta-tmedbg" remote="gyroidos" />
 
   <!-- YOCTO UTILITIES/FEATURES -->
-  <project path="poky" name="poky" />
+  <project path="bitbake" name="bitbake" remote="oe" revision="2.8" />
+  <project path="openembedded-core" name="openembedded-core" remote="oe" />
+  <project path="meta-yocto" name="meta-yocto" />
   <project path="meta-openembedded" name="meta-openembedded" remote="oe" />
   <project path="meta-virtualization" name="meta-virtualization" />
 </manifest>
