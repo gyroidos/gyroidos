@@ -131,8 +131,11 @@ if (startIdx > 0) {
 
 
 stage('Build & Test') {
-	def buildTypes = ['asan', 'ccmode', 'dev', 'production', 'hwhsm']
-	def testModes = [asan: 'dev']
+	def buildTypes = ['asan', 'ccmode', 'dev', 'production', 'hwhsm', 'pkcs11']
+	def testModes = [asan: 'dev', pkcs11: 'dev']
+	// Extra VM-container-tests.sh flags per buildtype. The pkcs11 image runs the
+	// normal dev test suite against a softhsm2-backed PKCS#11 container token.
+	def extraOpts = [pkcs11: '--test-pkcs11 libsofthsm2.so']
 	def hsmEnvs = [
 		schsm: { -> [serial: env.SCHSM_SERIAL, vid: env.SCHSM_VID, pid: env.SCHSM_PID, pin: env.PHYSHSM_PIN] },
 		bnse:  { -> [serial: env.BNSE_SERIAL,  vid: env.BNSE_VID,  pid: env.BNSE_PID,  pin: env.PHYSHSM_PIN] },
@@ -314,7 +317,8 @@ stage('Build & Test') {
 								hsm_serial: "",
 								hsm_vid: "",
 								hsm_pid: "",
-								hsm_pin: "")
+								hsm_pin: "",
+								extra_opts: (extraOpts[buildtype] ?: ''))
 						}
 					} finally {
 						doCleanup()
