@@ -27,11 +27,13 @@ properties([
 		string(name: 'LABEL_BUILDER', defaultValue: 'worker', description: 'Builder preference'),
 		string(name: 'LABEL_TESTER', defaultValue: 'tester', description: 'Tester preference'),
 		string(name: 'LABEL_TOKENTEST', defaultValue: 'tokentest', description: 'Token test node preference'),
+		string(name: 'LABEL_PXE', defaultValue: 'pxe', description: 'PXE-server node preference (hardware bring-up)'),
 		choice(name: 'GYROID_ARCH', choices: ['x86', 'arm32', 'arm64', 'riscv'], description: 'GyroidOS Target Architecture'),
 		choice(name: 'GYROID_MACHINE', choices: ['genericx86-64', 'apalis-imx8', 'raspberrypi2', 'raspberrypi3-64', 'raspberrypi4-64', 'raspberrypi5', 'tqma8mpxl', 'tqmlx2160a', 'ls1088ardb-pb', 'beaglev-fire'], description: 'GyroidOS Target Machine (Must be compatible with GYROID_ARCH!)'),
 		string(name: 'PR_BRANCHES', defaultValue: '', description: 'Comma separated list of pull request branches (e.g. meta-gyroidos=PR-177,meta-gyroidos-nxp=PR-13,gyroidos_build=PR-97)'),
 		choice(name: 'BUILD_INSTALLER', choices: ['n', 'y'], description: 'Build the GyroidOS installer (x86 only)'),
 		choice(name: 'CI_CONSOLE_REDIRECT', choices: ['y', 'n'], description: 'Redirect kernel/cml console to the CI serial backend for log capture. Set to n to build a hardware-deployable image.'),
+		choice(name: 'PXE_TEST', choices: ['n', 'y'], description: 'Run PXE hardware bring-up on real hardware (genericx86-64 dev image only; requires a configured pxe runner).'),
 		choice(name: 'START_FROM_STAGE', choices: ['Source checks + unit tests', 'Build Images', 'Integration Tests'], description: 'Stage to start from. Earlier stages will be skipped. When skipping "Build Images", BUILDSELECTOR must point to a build with existing artifacts.'),
 		choice(name: 'REBUILD_PREVIOUS', choices: ['n', 'y'], description: 'Rebuild selected, previous build instead of just reusing image from artifacts'),
 		buildSelector(defaultSelector: specific('${BUILD_NUMBER}'), name: 'BUILDSELECTOR', description: 'Image to perform integration tests on. Changing the default value skips the image build.'),
@@ -132,6 +134,10 @@ if (startIdx > 0) {
 
 stage('Build & Test') {
 	def buildTypes = ['asan', 'ccmode', 'dev', 'production', 'hwhsm']
+	// Opt-in dedicated hardware image (A/B + console-redirect off) for the PXE bring-up test.
+	if (params.PXE_TEST == 'y' && params.GYROID_MACHINE == 'genericx86-64' && !params.RELEASE_BUILD) {
+		buildTypes += 'pxe'
+	}
 	def testModes = [asan: 'dev']
 	def hsmEnvs = [
 		schsm: { -> [serial: env.SCHSM_SERIAL, vid: env.SCHSM_VID, pid: env.SCHSM_PID, pin: env.PHYSHSM_PIN] },
@@ -290,6 +296,22 @@ stage('Build & Test') {
 						}]
 					})
 				}
+			} else if (!params.RELEASE_BUILD && buildtype == 'pxe') {
+				stage("PXE Test") {
+				node(params.LABEL_PXE ?: 'pxe') {
+					timeout(time: 90, unit: 'MINUTES') {
+					try {
+						stepPxeTest(workspace: "${WORKSPACE}",
+							gyroid_machine: params.GYROID_MACHINE,
+							buildtype: 'pxe',
+							selector: buildParameter('BUILDSELECTOR'),
+							stage_name: STAGE_NAME)
+					} finally {
+						doCleanup()
+					}
+					} // timeout
+				} // node
+				} // stage
 			} else if (!params.RELEASE_BUILD) {
 				stage("Test ${buildtype}") {
 				node(params.LABEL_TESTER ?: 'tester') {
