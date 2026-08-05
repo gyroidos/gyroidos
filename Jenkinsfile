@@ -257,9 +257,20 @@ stage('Build & Test') {
 
 			// --- Test phase (skip during release builds) ---
 			if (!params.RELEASE_BUILD && buildtype == 'hwhsm') {
+				if (params.GYROID_MACHINE != 'genericx86-64') {
+					// Token tests only exist for genericx86-64 (see integrationTestMap in
+					// stepIntegrationTest) - skip here so no tokentest node is allocated.
+					echo "Skipping hwhsm token tests: no integration test defined for ${params.GYROID_MACHINE}"
+					return
+				}
 				stage("Test hwhsm") {
 					parallel(['schsm', 'bnse'].collectEntries { testtype ->
 						["Test ${buildtype} [${testtype.toUpperCase()}]": {
+							// Take the token lock before requesting a node: a run queued on the
+							// lock then waits on the flyweight thread instead of occupying a
+							// tokentest executor. Locking inside stepIntegrationTest is disabled
+							// via external_lock (locks are not reentrant).
+							lock("hwhsm-${testtype}") {
 							node(params.LABEL_TOKENTEST ?: 'tokentest') {
 								timeout(time: 60, unit: 'MINUTES') {
 								try {
@@ -278,6 +289,7 @@ stage('Build & Test') {
 										test_mode: "ccmode",
 										selector: buildParameter('BUILDSELECTOR'),
 										stage_name: STAGE_NAME,
+										external_lock: true,
 										hsm_serial: hsm.serial,
 										hsm_vid: hsm.vid,
 										hsm_pid: hsm.pid,
@@ -287,6 +299,7 @@ stage('Build & Test') {
 								}
 								} // timeout
 							} // node
+							} // lock
 						}]
 					})
 				}
