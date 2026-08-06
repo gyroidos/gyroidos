@@ -380,6 +380,21 @@ stage('Build & Test') {
 	}
 } // stage('Build & Test')
 
+// release builds skip all test stages, so there is nothing to summarize
+if (!params.RELEASE_BUILD) {
+	stage('Error Summary') {
+		node(params.LABEL_TESTER ?: 'tester') {
+			timeout(time: 10, unit: 'MINUTES') {
+			try {
+				stepErrorSummary()
+			} finally {
+				doCleanup()
+			}
+			} // timeout
+		} // node
+	} // stage
+}
+
 
 /*TODO deploy the development and production images on separate machines
   and start demo applications inside them (e.g. a webserver)*/
