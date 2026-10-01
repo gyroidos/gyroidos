@@ -138,7 +138,6 @@ stage('Build & Test') {
 		bnse:  { -> [serial: env.BNSE_SERIAL,  vid: env.BNSE_VID,  pid: env.BNSE_PID,  pin: env.PHYSHSM_PIN] },
 	]
 	def branches = [:]
-	def completedBuilds = java.util.Collections.synchronizedMap(new java.util.HashMap())
 
 	def activeBuildTypes = buildTypes.findAll { bt ->
 		!(params.RELEASE_BUILD && bt != "dev" && bt != "production")
@@ -240,19 +239,13 @@ stage('Build & Test') {
 								buildSteps: doBuild
 							)
 						}
-					} catch (e) {
-						completedBuilds.put(buildtype, e)
-						throw e
 					} finally {
-						completedBuilds.putIfAbsent(buildtype, null)
 						doCleanup()
 					}
 					} // withEnv
 					} // timeout
 				} // node
 				} // stage
-			} else {
-				completedBuilds.put(buildtype, null)
 			}
 
 			// --- Test phase (skip during release builds) ---
@@ -339,45 +332,7 @@ stage('Build & Test') {
 		}
 	}
 
-	if (params.SYNC_MIRRORS == 'y' && startIdx <= 1) {
-		parallel(
-			'Builds and Tests': {
-				parallel branches
-			},
-			'SSH Mirror Sync': {
-				def allBuildsOk = true
-				stage("Waiting for Builds") {
-					waitUntil(initialRecurrencePeriod: 1000, quiet: true) {
-						completedBuilds.keySet().containsAll(activeBuildTypes)
-					}
-					if (completedBuilds.any { k, v -> v != null }) {
-						echo "Not all builds succeeded, skipping mirror sync"
-						allBuildsOk = false
-					}
-				}
-
-				if (allBuildsOk) {
-				stage("Sync Mirror") {
-				node(params.LABEL_BUILDER ?: 'worker') {
-					timeout(time: 60, unit: 'MINUTES') {
-					try {
-						lock('mirror-sync') {
-							catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-								sh "ssh -o StrictHostKeyChecking=accept-new root@localhost"
-							}
-						}
-					} finally {
-						doCleanup()
-					}
-					} // timeout
-				} // node
-				} // stage
-				} // if allBuildsOk
-			}
-		)
-	} else {
-		parallel branches
-	}
+	parallel branches
 } // stage('Build & Test')
 
 // release builds skip all test stages, so there is nothing to summarize
