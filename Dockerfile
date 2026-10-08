@@ -52,6 +52,8 @@ RUN apt-get update && apt-get install -yyq --no-install-recommends \
 	libssl-dev \
 	libselinux-dev \
 	e2fsprogs \
+	libefivar-dev \
+	libefiboot-dev \
 # LLVM
 	clang \
 	clang-tools \
