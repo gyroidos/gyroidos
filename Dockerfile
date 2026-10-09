@@ -52,6 +52,10 @@ RUN apt-get update && apt-get install -yyq --no-install-recommends \
 	libssl-dev \
 	libselinux-dev \
 	e2fsprogs \
+	libefivar-dev \
+	libefiboot-dev \
+# SCHSM
+	libusb-1.0-0-dev \
 # LLVM
 	clang \
 	clang-tools \
@@ -83,6 +87,14 @@ RUN apt-get update && apt-get install -yyq --no-install-recommends \
 # Yocto requirements
 	python3-distutils-extra \
 	&& rm -rf /var/lib/apt/lists/*
+
+# sc-hsm-embedded ctccid library + ctapi
+ADD https://github.com/CardContact/sc-hsm-embedded/archive/refs/heads/master.zip /opt/sc-hsm-embedded-master.zip
+RUN cd /opt && unzip sc-hsm-embedded-master.zip \
+	&& cd sc-hsm-embedded-master && autoreconf -fi && ./configure --enable-ctapi --includedir=/usr/include \
+	&& make -C src/common  && make -C src/ctccid/ && make -C src/ctccid install \
+	&& cp src/ctccid/ctapi.h /usr/include/ctapi.h \
+	&& rm -rf /opt/sc-hsm-embedded-master /opt/sc-hsm-embedded-master.zip
 
 # protobuf-c-text library
 ADD https://github.com/gyroidos/external_protobuf-c-text/archive/refs/heads/master.zip /opt/external_protobuf-c-text-master.zip
