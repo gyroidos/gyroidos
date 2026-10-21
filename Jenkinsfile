@@ -61,7 +61,7 @@ stage('Source checks + unit tests') {
 if (startIdx > 0) {
 	echo "Stage skipped (starting from '${params.START_FROM_STAGE}')"
 } else {
-	node(params.LABEL_TESTER ?: 'tester') {
+	node(params.LABEL_INTEGRATIONTESTER ?: 'integrationtester') {
 		timeout(time: 30, unit: 'MINUTES') {
 		try {
 			dir('.manifests') {
